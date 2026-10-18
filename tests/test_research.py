@@ -140,7 +140,7 @@ class ResearchTests(unittest.TestCase):
 
     def test_workspace_api_contract(self):
         client = TestClient(app)
-        self.assertIn("Parliament Desk", client.get("/").text)
+        self.assertIn("PoliNews", client.get("/").text)
         self.assertEqual(client.get("/assets/app.js").status_code, 200)
         self.assertEqual(client.get("/admin").status_code, 200)
         self.assertEqual(client.get("/api/bodies").json()[0]["body_key"], "CHE")

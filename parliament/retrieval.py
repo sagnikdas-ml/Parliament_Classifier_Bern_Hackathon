@@ -18,7 +18,7 @@ def coverage():
     """)[0]
 
 
-def search(text, limit=30, body=None, semantic=True, language=None, date_from=None, date_to=None, terms=None):
+def search(text, limit=30, body=None, semantic=True, language=None, date_from=None, date_to=None, terms=None, whole_words=False):
     started = time.monotonic()
     words = list(dict.fromkeys(re.findall(r"[^\W_]{3,}", text.lower(), re.UNICODE)))[:32]
     if terms is not None:
@@ -39,11 +39,13 @@ def search(text, limit=30, body=None, semantic=True, language=None, date_from=No
         parameters.append(str(date_to))
     lexical = []
     if words:
-        score = " + ".join("CASE WHEN contains(lower(u.text), ?) THEN 1 ELSE 0 END" for _ in words)
+        predicate = "regexp_matches(lower(u.text), ?)" if whole_words else "contains(lower(u.text), ?)"
+        score = " + ".join(f"CASE WHEN {predicate} THEN 1 ELSE 0 END" for _ in words)
+        lexical_terms = [r"(^|[^\p{L}\p{N}])" + re.escape(word) + r"([^\p{L}\p{N}]|$)" for word in words] if whole_words else words
         lexical = db.query(f"""SELECT a.id, max({score}) AS score
             FROM units u JOIN affairs a ON a.id=u.affair_id
             WHERE {' AND '.join(conditions)} GROUP BY a.id
-            HAVING score>0 ORDER BY score DESC,a.id LIMIT ?""", [*words, *parameters, max(100, limit * 3)])
+            HAVING score>0 ORDER BY score DESC,a.id LIMIT ?""", [*lexical_terms, *parameters, max(100, limit * 3)])
     vector, pipeline = query_vector(text) if semantic else (None, None)
     dense = []
     if vector is not None:

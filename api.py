@@ -29,7 +29,7 @@ async def lifespan(app):
     jobs.stop_worker()
 
 
-app = FastAPI(title="Swiss Parliamentary Topic Classifier", lifespan=lifespan)
+app = FastAPI(title="PoliNews", lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory=ROOT / "web" / "public" / "assets"), name="assets")
 
 
@@ -311,3 +311,21 @@ def chat(message: str = Query(min_length=1, max_length=4000)):
         raise HTTPException(502, "Cannot connect to Keera.") from exc
     except APIStatusError as exc:
         raise HTTPException(502, f"Keera returned HTTP {exc.status_code}.") from exc
+
+
+class FactCheckRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=12000)
+    language: str = Field(default="en", pattern="^(en|de|fr|it|rm)$")
+    topic_ids: list[str] = Field(default_factory=list, max_length=3)
+
+
+@app.post("/api/fact-checks")
+def create_fact_check(request: FactCheckRequest):
+    from parliament.factcheck import create
+    return create(request.text, request.language, request.topic_ids)
+
+
+@app.post("/api/fact-checks/{identifier}/sentences/{index}")
+def check_news_sentence(identifier: str, index: int, force_archive: bool = False):
+    from parliament.factcheck import check
+    return check(identifier, index, force_archive)

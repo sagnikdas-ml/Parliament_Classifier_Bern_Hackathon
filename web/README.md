@@ -1,14 +1,14 @@
-# Cloudflare-ready frontend
+# PoliNews frontend
 
 The main demo needs no Node build: from the repository root run
 `bash scripts/run_demo.sh`, then open http://127.0.0.1:8000.
 The classification lab is at `/admin`; the journalist workspace is at `/`.
 
-The workspace now sends a natural-language question to `/api/research/search`, shows
+The default screen checks news sentence by sentence, combines political scope with archive evidence, and flags uncertain political claims for editorial review. Apolitical sentences are excluded from review notices. The research tab sends a natural-language question to `/api/research/search`, shows
 up to ten date-filtered candidates, and processes `/api/research/analyse` one affair
 at a time. This avoids a single long ten-affair Worker request. English titles and
 source passages are machine translations; originals remain available in Evidence.
-The main screen uses viewport-sized pagination instead of full-page scrolling.
+The research tab uses viewport-sized pagination instead of full-page scrolling.
 
 ## Exercise the Worker locally
 

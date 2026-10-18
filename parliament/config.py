@@ -9,7 +9,7 @@ API = "https://api.openparldata.ch/v1"
 FILES = "https://files.openparldata.ch"
 MODEL = "intfloat/multilingual-e5-small"
 EMBED_VERSION = "e5-passage-480-overlap64-v1"
-PROMPT_VERSION = "named-policy-evidence-v3"
+PROMPT_VERSION = "named-policy-evidence-v6"
 LANGUAGES = ("de", "fr", "it", "rm")
 
 

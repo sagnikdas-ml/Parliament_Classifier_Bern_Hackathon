@@ -1,8 +1,68 @@
-# Swiss Parliamentary Topic Classifier
+# PoliNews
 
-## Journalist demo: Parliament Desk
+## News fact checker
 
-The homepage is a single-screen research workflow: enter a natural-language question
+The opening screen now accepts multi-sentence news (up to 40 sentences / 12,000
+characters). **Research archives** retains the existing topic-classification workflow.
+Apertus identifies Swiss parliamentary, other political, apolitical or uncertain
+scope with adjacent sentence context and DuckDB-retrieved candidates and passages. Missing archive matches do not establish that a sentence is apolitical. Apolitical rows are collapsed; expand them to
+inspect the text. Scope exclusions offer **Check against archives anyway**.
+
+Supported input and explanation/correction languages are **English, German, French,
+Italian and Romansh** (`en`, `de`, `fr`, `it`, `rm`). The language selector controls
+explanations and corrections; archive quotations stay in their original language.
+Interface controls and APS catalogue labels retain their existing English/DE/FR labels.
+
+Retrieval searches the full DuckDB catalogue. Exact quoted affair titles take priority;
+referential follow-up sentences inherit the preceding named affair. Unanchored searches
+combine multilingual keywords and the available semantic index. Missing source text is
+fetched for up to three selected affairs and cached in DuckDB. Up to eight source windows
+are retained, with a cap of three per affair so long documents cannot crowd out others.
+Catalogue coverage, cached-text coverage and embedding coverage are shown separately.
+This is bounded retrieval, not exhaustive verification or a complete archive refresh.
+Titles and title duplicates cannot serve as fact-check evidence.
+
+Political sentences with unverified or contradicted claims show **Needs review**
+notices and contribute to the editorial review count. Uncertain political scope also
+gets a review notice. Apolitical sentences never contribute to these notices or counts,
+even after a manual archive check. Other political news is also assessed, with archive
+coverage limitations producing unverified results rather than false verdicts.
+
+Claims within a sentence receive supported, contradicted, unverified or not-factual
+labels. Mixed sentences display separate coloured claim cards. Supported and
+contradicted verdicts require selecting original source quotations by ID and a separate model review
+of entailment, entities, dates and procedural status. Corrections appear only for
+contradicted claims when that review also supports the correction. Invalid quotes
+or rejected reviews become unverified. No matches never means false. Opinions
+also undergo a second review before being marked not factual.
+
+Results show APS topics for cited affairs, using the existing classifier with a
+multilingual embedding shortlist of taxonomy definitions. Journalists can also draft,
+review and save up to three ad-hoc topics, then select them for a news run. Apertus
+classifies cited affairs against those definitions without retraining; each accepted
+match includes a source passage. Source provenance includes
+the affair author when available, original record link, affair start date and labelled
+recorded events. An affair author is not automatically the speaker of every passage;
+start/submission dates are not automatically dates of incidents. Contributor and event
+responses are cached in DuckDB. Corrections have their own evidence and entailment check.
+
+`POST /api/fact-checks` accepts `{"text":"Your news here.","language":"en","topic_ids":["custom:..."]}` and returns a run ID
+and sentence offsets. `POST /api/fact-checks/{id}/sentences/{index}` checks one
+sentence; `?force_archive=true` overrides scope exclusion. Requests use the existing
+backend authentication and Worker gateway. Runs and results persist in DuckDB's
+`fact_checks` and `fact_check_sentences` tables, including model/version and evidence
+hashes. Retries reassess current archives. The browser supports stop after the current
+sentence and resume unfinished sentences while the page remains open.
+
+Evidence gates do not guarantee factual accuracy: scope, claim decomposition and
+entailment still rely on the LLM, and retrieval can miss relevant evidence. A source
+allegation does not establish real-world truth. The existing topic benchmark is not
+a fact-checking accuracy evaluation. Automated regression tests use mocked model
+responses. A small live regression set is available via `PYTHONPATH=. .venv/bin/python scripts/check_news_live.py` (uses configured inference credentials). Its results in `evaluation/news-live-regression.json` are not an independent accuracy benchmark or proof of equal quality across languages.
+
+## Journalist demo: PoliNews
+
+The **Research archives** tab retains the research workflow: enter a natural-language question
 and dates, retrieve up to ten candidates, then automatically classify them against
 the interpreted topic and translate titles and accepted evidence into English.
 Originals remain visible. Results are paginated to fit the viewport; no landing page
@@ -26,11 +86,14 @@ http://127.0.0.1:8000. The new home page supports reporting scopes, candidate
 discovery, source inspection, human corrections, and Markdown evidence shortlists.
 The original classification/evaluation dashboard remains at `/admin`.
 
-**Quality warning:** the existing 8B APS classifier failed a small seven-case
-AI-assisted reference check. Use this as a human-review prototype, not unattended
-editorial classification; see `VALIDATION.md`. Exact quotations prove traceability,
-not correctness. Run `python -m parliament.research_evaluation` to reproduce the check
-against the locally cached sources and predictions.
+The default inference model is `apertus-v1-5-70b` (tool-call variant, not thinking).
+The live news regression currently passes 14/14 expected scenario outcomes across
+the five supported languages, including cited political claims, a sourced correction,
+and unsupported political content. This is a small smoke set, not an independent
+accuracy benchmark; use the app for human-reviewed journalism, not unattended
+publication. A historical seven-case check found problems with the earlier 8B APS
+classifier; exact quotations prove traceability, not correctness. See `VALIDATION.md`
+and `evaluation/news-live-regression.json`.
 
 See [PRODUCT.md](PRODUCT.md) for the journalist story and five-minute demonstration,
 and [web/README.md](web/README.md) for the optional local Cloudflare Worker gateway
@@ -85,7 +148,7 @@ existing Python 3.14 virtual environment. Run commands from the repository root.
 
    | URL | Page |
    |---|---|
-   | <http://127.0.0.1:8000/> | Parliament Desk (journalist workflow) |
+   | <http://127.0.0.1:8000/> | PoliNews (journalist workflow) |
    | <http://127.0.0.1:8000/admin> | Classification and evaluation dashboard |
    | <http://127.0.0.1:8000/docs> | API specification |
    | <http://127.0.0.1:8000/chat-ui> | Original chat interface |
@@ -117,7 +180,7 @@ Configuration:
 | `PARL_DATA_DIR` | `data/` beside this repository |
 | `KEERA_API_KEY` | fallback to `.key` |
 | `APERTUS_BASE_URL` | `https://gateway.keera.ch/api/v1` |
-| `APERTUS_MODEL` | `apertus-v1-5-8b` |
+| `APERTUS_MODEL` | `apertus-v1-5-70b` |
 | `HF_HOME` | `data/cache/huggingface` unless already set |
 
 Use one API worker. A file lock serializes short DuckDB transactions across CLI

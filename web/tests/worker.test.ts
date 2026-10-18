@@ -7,6 +7,9 @@ test("gateway route allowlist excludes jobs, arbitrary URLs and chat", () => {
   assert.ok(allowed("POST", "/api/affairs/12/classify"));
   assert.ok(allowed("POST", "/api/research/search"));
   assert.ok(allowed("POST", "/api/research/analyse"));
+  assert.ok(allowed("POST", "/api/fact-checks"));
+  assert.ok(allowed("POST", "/api/fact-checks/" + "a".repeat(32) + "/sentences/0"));
+  assert.equal(allowed("GET", "/api/fact-checks"), false);
   for (const path of ["/api/jobs", "/chat", "/api/proxy", "/api/affairs/12/delete", "/api/affairs/https://evil"]) assert.equal(allowed("POST", path), false);
 });
 test("remote requests fail closed even with a spoofed JWT", async () => {

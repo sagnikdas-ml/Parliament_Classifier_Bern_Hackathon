@@ -15,12 +15,12 @@ def ask_apertus(message: str) -> str:
 
     with OpenAI(
         api_key=key,
-        base_url="https://gateway.keera.ch/api/v1",
+        base_url=os.environ.get("APERTUS_BASE_URL", "https://gateway.keera.ch/api/v1"),
         timeout=30.0,
         max_retries=0,
     ) as client:
         response = client.chat.completions.create(
-            model="apertus-v1-5-8b",
+            model=os.environ.get("APERTUS_MODEL", "apertus-v1-5-70b"),
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": message},

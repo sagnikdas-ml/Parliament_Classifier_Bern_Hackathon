@@ -2,12 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Parliament Desk</title>
-<link rel="stylesheet" href="/assets/style.css"><script src="/assets/focus.js" defer></script>
+<title>PoliNews</title>
+<link rel="stylesheet" href="/assets/style.css"><script src="/assets/focus.js" defer></script><script src="/assets/factcheck.js" defer></script>
 </head>
 <body>
-<header><h1>Parliament Desk</h1><button id="evaluation" class="secondary">Evaluation</button></header>
-<main>
+<header><h1>PoliNews</h1><nav><button id="factTab" aria-pressed="true">Check news</button> <button id="researchTab" class="secondary" aria-pressed="false">Research archives</button></nav><button id="evaluation" class="secondary">Evaluation</button></header>
+<main id="factDesk">
+<h2>Check news against parliamentary archives</h2>
+<p class="hint">News languages: English, Deutsch, Français, Italiano and Rumantsch. Each sentence is checked separately. Supported means supported by the retrieved records; unverified does not mean false.</p>
+<form id="factForm">
+<label for="news">News text</label>
+<textarea id="news" rows="6" maxlength="12000" required placeholder="Paste your multi-sentence news here…"></textarea>
+<label for="newsLanguage">Language for explanations and corrections</label>
+<select id="newsLanguage"><option value="en">English</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="it">Italiano</option><option value="rm">Rumantsch</option></select>
+<details class="customTopicBox"><summary>Optional custom topics (ad-hoc, no retraining)</summary>
+<p class="hint">APS topics are always attached when evidence supports them. Select up to three saved custom topics to classify each cited affair against your own scope.</p>
+<label for="customTopics">Apply saved custom topics</label><select id="customTopics" multiple size="3" aria-describedby="customTopicHelp"></select>
+<p id="customTopicHelp" class="hint">Hold ⌘ or Ctrl to select more than one.</p>
+<details><summary>Create a custom topic</summary>
+<label for="customTopicName">Topic name</label><input id="customTopicName" maxlength="200" placeholder="For example: Digitalisation">
+<div class="factActions"><button id="draftCustomTopic" type="button" class="secondary">Draft definition with Apertus</button></div>
+<label for="customTopicDefinition">Definition and inclusion/exclusion criteria</label><textarea id="customTopicDefinition" rows="3" maxlength="4000" placeholder="Define what counts as this topic and what should be excluded."></textarea>
+<label for="customTopicKeywords">Multilingual keywords (JSON)</label><textarea id="customTopicKeywords" rows="3" placeholder='{"de": [], "fr": [], "it": []}'>{}</textarea>
+<button id="saveCustomTopic" type="button">Save custom topic</button><p id="customTopicStatus" class="hint" role="status" aria-live="polite"></p>
+</details></details>
+<div class="factActions"><button id="checkNews" type="submit">Check sentences</button><button id="stopNews" class="secondary" type="button" disabled>Stop</button><button id="resumeNews" class="secondary" type="button" hidden>Resume unfinished</button></div>
+</form>
+<p id="factProgress" role="status" aria-live="polite">Up to 40 sentences. Searches the full catalogue and retrieves source text for selected affairs.</p>
+<p id="reviewSummary" role="status" aria-live="polite" hidden></p>
+<div id="factResults"></div>
+</main>
+<main id="researchDesk" hidden>
 <form id="searchForm">
 <div class="searchRow"><div><label for="query">What are you researching?</label><input id="query" required minlength="5" maxlength="2000" title="Your question is sent to Apertus. Do not include confidential information." placeholder="Find proposals on public-sector AI between 1 and 15 October 2026"></div><button id="search" type="submit">Find & classify 10</button><button id="stop" type="button" class="secondary" disabled>Stop</button></div>
 <div class="dateRow"><label for="from">From</label><input id="from" type="date" title="Optional. Overrides the date in your question."><label for="to">To</label><input id="to" type="date" title="Optional. Overrides the date in your question."><span class="hint">Or include dates in your question. Dates refer to the affair's start date.</span></div>

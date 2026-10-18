@@ -1,4 +1,4 @@
-# Parliament Desk
+# PoliNews
 
 ## User story
 
@@ -6,7 +6,18 @@
 > topic between two dates, see the best candidates classified against that topic,
 > and read English translations alongside the original evidence.
 
-## One workflow
+## News checking
+
+The default screen checks multi-sentence news against DuckDB source text, fetching missing content for a bounded shortlist. Supported news and explanation/correction languages: English, German, French, Italian and Romansh.
+Scope detection uses Apertus, adjacent context and DuckDB retrieval. Unverified or contradicted political claims and uncertain scope trigger an editorial “Needs review” notice. Apolitical sentences are excluded from review notices and counts. Each checkable sentence is
+retrieved and assessed independently, with exact citations and a second model
+review before supported/contradicted verdicts. Unsupported judgments stay unverified;
+archive-supported corrections are shown separately. Mixed claims have separate
+coloured cards. Apolitical rows are expandable, and excluded scopes can be checked
+against archives manually. Stop/resume works within the current browser session.
+Cited affairs show APS topics, available authors, labelled record/event dates and original source links. Corrections are independently checked against their cited evidence. The original research workflow remains under **Research archives**.
+
+## Research workflow
 
 1. Enter a natural-language question, with dates in the question or date fields.
 2. Apertus extracts the reporting scope, dates, and German/French/Italian search terms.
@@ -15,7 +26,7 @@
 5. Translate each title and accepted evidence quotation into English with Apertus.
 6. Inspect originals, correct relevance, and export selected original-source evidence.
 
-There is one compact screen. Pagination adapts to available height, with at most five
+The research tab has one compact screen. Pagination adapts to available height, with at most five
 rows per page. Evidence and evaluation open in dialogs. No marketing hero, article
 generator, topic-management workflow, or model catalogue in the primary interface.
 

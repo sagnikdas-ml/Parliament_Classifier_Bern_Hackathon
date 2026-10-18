@@ -1,0 +1,1083 @@
+{
+  "checked_at": "2026-10-18T19:30:54.207865+00:00",
+  "model": "apertus-v1-5-70b",
+  "version": "archive-factcheck-v4",
+  "cases": [
+    {
+      "name": "original_news",
+      "language": "en",
+      "run_id": "5d5df37509fb44eb809288d6afdf4717",
+      "outcomes": [
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 210,
+            "text": "The Swiss parliamentary affair \"Künstliche Intelligenz als Infrastruktur\" asks how the public, businesses, researchers, schools, and public administration could access a competitive, open, and secure AI system.",
+            "input_language": "en",
+            "sentence_english": "The Swiss parliamentary affair \"Künstliche Intelligenz als Infrastruktur\" asks how the public, businesses, researchers, schools, and public administration could access a competitive, open, and secure AI system.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence explicitly refers to a Swiss parliamentary affair concerning AI infrastructure and access, which falls under legislative and policy matters. The archive confirms the existence of a parliamentary initiative titled \"Künstliche Intelligenz als Infrastruktur\" (\"L'intelligenza artificiale come infrastruttura\") in Switzerland, dealing with AI access and infrastructure requirements. This is a clear political context.",
+            "claims": [
+              {
+                "text": "The Swiss parliamentary affair \"Künstliche Intelligenz als Infrastruktur\" asks how the public, businesses, researchers, schools, and public administration could access a competitive, open, and secure AI system.",
+                "verdict": "supported",
+                "explanation": "Archive evidence E9 states: \"Wie kann ein niederschwelliger Zugang von Bevölkerung, Wirtschaft, Forschung, Bildung und Verwaltung zu einem wettbewerbsfähigen, offenen und sicheren KI-System ausgestaltet werden?\" which translates to \"How can low-threshold access for the population, economy, research, education, and public administration to a competitive, open, and secure AI system be designed?\" This directly matches the claim's description of the parliamentary affair's focus.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:de",
+                    "quote": "Wie kann ein niederschwelliger Zugang von Bevölkerung, Wirtschaft, Forschung, Bildung und Verwaltung zu einem wettbewerbsfähigen, offenen und sicheren KI-System ausgestaltet werden?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "a18a06636cb68a1fd4cd1ecd1089d4da82dcd2770eae1dca343b4cd8b163e5f2"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "The Swiss parliamentary affair \"Künstliche Intelligenz als Infrastruktur\" asks how the public, businesses, researchers, schools, and public administration could access a competitive, open, and secure AI system.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "f8ea4c7dd0197694bed74bd291bb227e85dbf7df416c4ef3c82ea94ddcdc08c4",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 1,
+            "start": 211,
+            "end": 341,
+            "text": "It also asks what requirements should apply to data centres operating public AI services, including cooling and water consumption.",
+            "input_language": "en",
+            "sentence_english": "It also asks what requirements should apply to data centres operating public AI services, including cooling and water consumption.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence explicitly refers to a Swiss parliamentary affair ('Künstliche Intelligenz als Infrastruktur') and discusses regulatory requirements for data centres operating public AI services, which is a clear matter of Swiss legislative policy.",
+            "claims": [
+              {
+                "text": "It also asks what requirements should apply to data centres operating public AI services, including cooling and water consumption.",
+                "verdict": "supported",
+                "explanation": "Archive evidence E30 contains the exact question about requirements for data centres operating public AI services, specifically mentioning cooling (Kühlung), water consumption (Wasserverbrauch), and load flexibility (Lastflexibilität). This directly matches the claim.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:de",
+                    "quote": "Welche Anforderungen wären an Rechenzentren zu stellen, die öffentliche KI-Dienste betreiben, namentlich bezüglich Abwärmenutzung, Kühlung, Wasserverbrauch und Lastflexibilität?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "a18a06636cb68a1fd4cd1ecd1089d4da82dcd2770eae1dca343b4cd8b163e5f2"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "The Swiss parliamentary affair \"Künstliche Intelligenz als Infrastruktur\" asks how the public, businesses, researchers, schools, and public administration could access a competitive, open, and secure AI system.\nIt also asks what requirements should apply to data centres operating public AI services, including cooling and water consumption.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "3f39f9fce6142ad471b0b771395cf0f77ade6938c746f365351c805acee8d53e",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 2,
+            "start": 342,
+            "end": 368,
+            "text": "I had coffee this morning.",
+            "input_language": "en",
+            "sentence_english": "I had coffee this morning.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence \"I had coffee this morning\" describes a personal, everyday activity unrelated to the Swiss parliamentary topic mentioned in the article context. There is no political content, policy discussion, or reference to governance in the sentence itself.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 3,
+            "start": 369,
+            "end": 397,
+            "text": "My favourite colour is blue.",
+            "input_language": "en",
+            "sentence_english": "My favourite colour is blue.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence 'My favourite colour is blue.' is a personal statement about an individual's preference and has no connection to political affairs, governance, or policy. It does not involve Swiss parliamentary matters, elections, legislation, or any political entities.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "correction",
+      "language": "en",
+      "run_id": "ba546494182f45bc8f27be5e04aa1d26",
+      "outcomes": [
+        {
+          "expected": "contradicted",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 198,
+            "text": "The parliamentary affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that MILAK already has the right to award doctorates and already offers a master's programme.",
+            "input_language": "de",
+            "sentence_english": "The parliamentary affair \"Strengthening the Federal Military Academy at ETH Zurich (MILAK)\" states that MILAK already has the right to award doctorates and already offers a master's programme.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence directly reports the content of a Swiss parliamentary affair concerning the Eidgenössische Militärakademie an der ETH Zürich (MILAK), which is a legislative matter within the Swiss federal, cantonal, and municipal parliamentary system. The archive confirms the existence of this parliamentary affair and discusses its focus on strengthening military education and research at MILAK. The sentence itself is an explicit report of a Swiss parliamentary topic.",
+            "claims": [
+              {
+                "text": "The parliamentary affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that MILAK already has the right to award doctorates and already offers a master's programme.",
+                "verdict": "contradicted",
+                "explanation": "Archive evidence E22 explicitly states that \"In ihrer aktuellen Form ist die MILAK aber strukturell zurückgebunden: Ihre Lehrveranstaltungen können von zivilen Studierenden nicht belegt werden, sie verfügt weder über das Promotionsrecht noch einen Masterstudiengang...\" (In its current form, MILAK is structurally restricted: its courses cannot be taken by civilian students, it has neither the right to award doctorates nor a master's programme...). This directly contradicts the claim that MILAK already has these rights and programmes.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340685:225277:de",
+                    "quote": "In ihrer aktuellen Form ist die MILAK aber strukturell zurückgebunden: Ihre Lehrveranstaltungen können von zivilen Studierenden nicht belegt werden, sie verfügt weder über das Promotionsrecht noch einen Masterstudiengang und ist beim Schweizerischen Nationalfonds (SNF) nicht antragsberechtigt.",
+                    "affair_id": 340685,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340685/texts",
+                    "content_hash": "bb9ad4ff95fefd06f04a305499330d8f040f7192a065efb177b0c1eb762a5ca3"
+                  }
+                ],
+                "correction": "The parliamentary affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" actually states that MILAK currently does NOT have the right to award doctorates and does NOT offer a master's programme, but could do so with structural strengthening.",
+                "correction_evidence": [
+                  {
+                    "unit_id": "text:340685:225277:de",
+                    "quote": "In ihrer aktuellen Form ist die MILAK aber strukturell zurückgebunden: Ihre Lehrveranstaltungen können von zivilen Studierenden nicht belegt werden, sie verfügt weder über das Promotionsrecht noch einen Masterstudiengang und ist beim Schweizerischen Nationalfonds (SNF) nicht antragsberechtigt.",
+                    "affair_id": 340685,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340685/texts",
+                    "content_hash": "bb9ad4ff95fefd06f04a305499330d8f040f7192a065efb177b0c1eb762a5ca3"
+                  }
+                ],
+                "needs_review": true
+              }
+            ],
+            "status": "contradicted",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340685
+              ],
+              "passages": 3,
+              "anchored": true,
+              "resolved_reference": "The parliamentary affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that MILAK already has the right to award doctorates and already offers a master's programme.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "a5dd7e1faad6cf58ac17162ce502a37e39a63cb54c410ca76722ce6e4dad0a92",
+            "topics": [
+              {
+                "topic_id": "aps:4.2.4",
+                "evidence": {
+                  "unit_id": "text:340685:225277:de",
+                  "quote": "Forschung und Lehre zu Sicherheit und Militär mit einem festen inhaltlichen Bezug zur Schweiz ist hierzulande nur an der Militärakademie an der ETH Zürich institutionell verankert.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340685/texts"
+                },
+                "name": "Hochschulen / Hautes écoles",
+                "chapter": {
+                  "code": "4.2",
+                  "de": "Bildung und Forschung",
+                  "fr": "Enseignement et recherche"
+                },
+                "affair_id": 340685,
+                "scheme": "APS"
+              },
+              {
+                "topic_id": "aps:4.2.5",
+                "evidence": {
+                  "unit_id": "text:340685:225276:de",
+                  "quote": "In diesem Zusammenhang stelle ich folgende Fragen: Teilt der Bundesrat die Ansicht, dass die militärwissenschaftliche Forschung und Lehre an der MILAK strukturell gestärkt werden soll? Wenn ja, wie?",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340685/texts"
+                },
+                "name": "Forschung / Recherche",
+                "chapter": {
+                  "code": "4.2",
+                  "de": "Bildung und Forschung",
+                  "fr": "Enseignement et recherche"
+                },
+                "affair_id": 340685,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340685,
+                "titles": {
+                  "de": "Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)",
+                  "it": "Rafforzamento dell’Accademia militare federale presso il PF di Zurigo"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340685",
+                "provenance": {
+                  "affair_id": 340685,
+                  "number": "26.4548",
+                  "authors": [
+                    {
+                      "name": "Marianne Binder-Keller",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340685/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340685/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264548",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": true,
+            "review_notice": "Needs review: archive evidence conflicts with a claim in this sentence."
+          }
+        }
+      ]
+    },
+    {
+      "name": "unknown_amount",
+      "language": "en",
+      "run_id": "df5ca2eb31c14f65a3b1776ec6a0c973",
+      "outcomes": [
+        {
+          "expected": "unverified",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 160,
+            "text": "The affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that exactly 987 million francs have been approved for its expansion.",
+            "input_language": "de",
+            "sentence_english": "The affair \"Strengthening the Federal Military Academy at ETH Zurich (MILAK)\" states that exactly 987 million francs have been approved for its expansion.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence explicitly refers to a Swiss parliamentary affair concerning the expansion of the Federal Military Academy at ETH Zurich, including a specific budget figure. The archive confirms the existence of this parliamentary affair (MILAK) and discusses its role in military science and security education in Switzerland. This is a clear report of Swiss parliamentary legislative activity regarding defense and education policy.",
+            "claims": [
+              {
+                "text": "The affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that exactly 987 million francs have been approved for its expansion.",
+                "verdict": "unverified",
+                "explanation": "The archive evidence provided does not contain any information regarding the amount of money (987 million francs) approved for the expansion of the Federal Military Academy at ETH Zurich. The documents discuss structural strengthening, research, teaching, and cooperation but do not mention specific financial figures.",
+                "evidence": [],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": true
+              }
+            ],
+            "status": "unverified",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "en",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340685
+              ],
+              "passages": 3,
+              "anchored": true,
+              "resolved_reference": "The affair \"Stärkung der Eidgenössischen Militärakademie an der ETH Zürich (MILAK)\" states that exactly 987 million francs have been approved for its expansion.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "a5dd7e1faad6cf58ac17162ce502a37e39a63cb54c410ca76722ce6e4dad0a92",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "political",
+            "needs_review": true,
+            "review_notice": "Needs review: a political claim could not be verified against the available archives. This does not mean it is false."
+          }
+        }
+      ]
+    },
+    {
+      "name": "german",
+      "language": "de",
+      "run_id": "c3e04e19b3b248aebe1d30a8e1e1cfaf",
+      "outcomes": [
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 167,
+            "text": "Das parlamentarische Geschäft «Künstliche Intelligenz als Infrastruktur» fragt nach Anforderungen an Rechenzentren, insbesondere bezüglich Kühlung und Wasserverbrauch.",
+            "input_language": "de",
+            "sentence_english": "The parliamentary matter \"Artificial Intelligence as Infrastructure\" asks about requirements for data centers, particularly regarding cooling and water consumption.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence explicitly refers to a parliamentary matter ('parlamentarische Geschäft') concerning requirements for data centers, specifically cooling and water consumption, which falls under Swiss parliamentary affairs. The archive confirms the existence of a parliamentary initiative titled \"Künstliche Intelligenz als Infrastruktur\" (\"Artificial Intelligence as Infrastructure\"), confirming the political context.",
+            "claims": [
+              {
+                "text": "Das parlamentarische Geschäft «Künstliche Intelligenz als Infrastruktur» fragt nach Anforderungen an Rechenzentren, insbesondere bezüglich Kühlung und Wasserverbrauch.",
+                "verdict": "supported",
+                "explanation": "Die archivierte Frage E14 formuliert explizit: \"Welche Anforderungen wären an Rechenzentren zu stellen, die öffentliche KI-Dienste betreiben, namentlich bezüglich Abwärmenutzung, Kühlung, Wasserverbrauch und Lastflexibilität?\" Dies deckt sich wortwörtlich mit dem Inhalt des claim_to_check.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:de",
+                    "quote": "Welche Anforderungen wären an Rechenzentren zu stellen, die öffentliche KI-Dienste betreiben, namentlich bezüglich Abwärmenutzung, Kühlung, Wasserverbrauch und Lastflexibilität?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "a18a06636cb68a1fd4cd1ecd1089d4da82dcd2770eae1dca343b4cd8b163e5f2"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "de",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "Das parlamentarische Geschäft «Künstliche Intelligenz als Infrastruktur» fragt nach Anforderungen an Rechenzentren, insbesondere bezüglich Kühlung und Wasserverbrauch.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "f8ea4c7dd0197694bed74bd291bb227e85dbf7df416c4ef3c82ea94ddcdc08c4",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 1,
+            "start": 168,
+            "end": 207,
+            "text": "Ich habe heute Morgen Kaffee getrunken.",
+            "input_language": "de",
+            "sentence_english": "I drank coffee this morning.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence \"Ich habe heute Morgen Kaffee getrunken.\" describes a personal, everyday activity unrelated to political affairs, legislation, or Swiss parliamentary business. The article context concerns a parliamentary motion on artificial intelligence infrastructure, but the sentence itself does not reference or relate to this topic.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "de",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "french",
+      "language": "fr",
+      "run_id": "0378539e0a014636af40df58472bf029",
+      "outcomes": [
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 241,
+            "text": "L'affaire parlementaire «Künstliche Intelligenz als Infrastruktur» demande quelles exigences devraient s'appliquer aux centres de données exploitant des services publics d'IA, notamment en matière de refroidissement et de consommation d'eau.",
+            "input_language": "fr",
+            "sentence_english": "The parliamentary matter \"Artificial Intelligence as Infrastructure\" asks what requirements should apply to data centers operating public AI services, particularly regarding cooling and water consumption.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence explicitly refers to a parliamentary matter concerning requirements for data centers operating public AI services, which falls under Swiss parliamentary affairs. The archive confirms the existence of a parliamentary dossier titled \"Künstliche Intelligenz als Infrastruktur\" (\"Artificial Intelligence as Infrastructure\"), confirming the political context.",
+            "claims": [
+              {
+                "text": "L'affaire parlementaire «Künstliche Intelligenz als Infrastruktur» demande quelles exigences devraient s'appliquer aux centres de données exploitant des services publics d'IA, notamment en matière de refroidissement et de consommation d'eau.",
+                "verdict": "supported",
+                "explanation": "L'archive evidence E30 contient une formulation presque identique à la revendication : elle demande explicitement quelles exigences devraient être imposées aux centres de données qui exploitent des services publics d'IA, en mentionnant spécifiquement le refroidissement et la consommation d'eau.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:de",
+                    "quote": "Welche Anforderungen wären an Rechenzentren zu stellen, die öffentliche KI-Dienste betreiben, namentlich bezüglich Abwärmenutzung, Kühlung, Wasserverbrauch und Lastflexibilität?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "a18a06636cb68a1fd4cd1ecd1089d4da82dcd2770eae1dca343b4cd8b163e5f2"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "fr",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "L'affaire parlementaire «Künstliche Intelligenz als Infrastruktur» demande quelles exigences devraient s'appliquer aux centres de données exploitant des services publics d'IA, notamment en matière de refroidissement et de consommation d'eau.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "3f39f9fce6142ad471b0b771395cf0f77ade6938c746f365351c805acee8d53e",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 1,
+            "start": 242,
+            "end": 267,
+            "text": "J'ai bu un café ce matin.",
+            "input_language": "fr",
+            "sentence_english": "I drank a coffee this morning.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence \"J'ai bu un café ce matin.\" describes a personal, everyday activity (drinking coffee) with no connection to political affairs, governance, or Swiss parliamentary matters. The article context discusses a parliamentary case on AI infrastructure, but the sentence itself is unrelated to politics.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "fr",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "italian",
+      "language": "it",
+      "run_id": "45558fe4cbf845989410c743af015383",
+      "outcomes": [
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 231,
+            "text": "L'affare parlamentare «Künstliche Intelligenz als Infrastruktur» chiede quali requisiti debbano soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare riguardo al raffreddamento e al consumo idrico.",
+            "input_language": "it",
+            "sentence_english": "The parliamentary affair \"Artificial Intelligence as Infrastructure\" asks what requirements data centers managing public AI-based services must meet, particularly regarding cooling and water consumption.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence names a Swiss parliamentary affair matched to an OpenParlData record; the archive match establishes parliamentary scope. Factual claims are assessed separately.",
+            "claims": [
+              {
+                "text": "L'affare parlamentare «Künstliche Intelligenz als Infrastruktur» chiede quali requisiti debbano soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare riguardo al raffreddamento e al consumo idrico.",
+                "verdict": "supported",
+                "explanation": "L'evidenza E12 riporta esattamente la domanda posta nell'affare parlamentare: \"Quali requisiti dovrebbero soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare per quanto riguarda il recupero del calore residuo, il raffreddamento, il consumo idrico e la flessibilità del carico?\" Il claim traduce fedelmente questa richiesta, includendo i dettagli specifici sul raffreddamento e sul consumo idrico.",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:it",
+                    "quote": "Quali requisiti dovrebbero soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare per quanto riguarda il recupero del calore residuo, il raffreddamento, il consumo idrico e la flessibilità del carico?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "339d5611f50a2f977b71be65e9a16520e3b6a2fdccb920dc0feb5b76be5d0165"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "it",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "L'affare parlamentare «Künstliche Intelligenz als Infrastruktur» chiede quali requisiti debbano soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare riguardo al raffreddamento e al consumo idrico.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "3f39f9fce6142ad471b0b771395cf0f77ade6938c746f365351c805acee8d53e",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 1,
+            "start": 232,
+            "end": 266,
+            "text": "Ho bevuto un caffè questa mattina.",
+            "input_language": "it",
+            "sentence_english": "I drank a coffee this morning.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence \"Ho bevuto un caffè questa mattina.\" describes a personal, everyday activity (drinking coffee) with no connection to political affairs, legislation, or Swiss parliamentary matters. The article context discusses a parliamentary issue on AI infrastructure, but the sentence itself is unrelated to politics.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "it",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "romansh",
+      "language": "rm",
+      "run_id": "3813399da3464082830dea49defe4859",
+      "outcomes": [
+        {
+          "expected": "supported",
+          "passed": true,
+          "result": {
+            "index": 0,
+            "start": 0,
+            "end": 228,
+            "text": "L'affera parlamentara «Künstliche Intelligenz als Infrastruktur» dumonda tge pretensiuns che duain valair per centers da datas che mainan servetschs publics d'intelligenza artifiziala, inclusiv la sfradentada ed il consum d'aua.",
+            "input_language": "de",
+            "sentence_english": "The parliamentary inquiry \"Artificial Intelligence as Infrastructure\" asks what requirements should apply to data centers operating public artificial intelligence services, including cooling and water consumption.",
+            "scope": "swiss_parliament",
+            "scope_explanation": "The sentence describes a parliamentary inquiry in Switzerland concerning the requirements for data centers operating public AI services, including cooling and water consumption. This is a clear reference to Swiss legislative affairs, making it political content.",
+            "claims": [
+              {
+                "text": "L'affera parlamentara «Künstliche Intelligenz als Infrastruktur» dumonda tge pretensiuns che duain valair per centers da datas che mainan servetschs publics d'intelligenza artifiziala, inclusiv la sfradentada ed il consum d'aua.",
+                "verdict": "supported",
+                "explanation": "The archive evidence E12 and E30 explicitly state that the parliamentary inquiry \"Künstliche Intelligenz als Infrastruktur\" (\"L'intelligenza artificiale come infrastruttura\") asks what requirements should apply to data centers operating public AI services, specifically mentioning cooling (Kühlung/Raffreddamento) and water consumption (Wasserverbrauch/consumo idrico).",
+                "evidence": [
+                  {
+                    "unit_id": "text:340832:225335:it",
+                    "quote": "Quali requisiti dovrebbero soddisfare i data center che gestiscono servizi pubblici basati sull'IA, in particolare per quanto riguarda il recupero del calore residuo, il raffreddamento, il consumo idrico e la flessibilità del carico?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "339d5611f50a2f977b71be65e9a16520e3b6a2fdccb920dc0feb5b76be5d0165"
+                  },
+                  {
+                    "unit_id": "text:340832:225335:de",
+                    "quote": "Welche Anforderungen wären an Rechenzentren zu stellen, die öffentliche KI-Dienste betreiben, namentlich bezüglich Abwärmenutzung, Kühlung, Wasserverbrauch und Lastflexibilität?",
+                    "affair_id": 340832,
+                    "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts",
+                    "content_hash": "a18a06636cb68a1fd4cd1ecd1089d4da82dcd2770eae1dca343b4cd8b163e5f2"
+                  }
+                ],
+                "correction": null,
+                "correction_evidence": [],
+                "needs_review": false
+              }
+            ],
+            "status": "supported",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "rm",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "retrieval": {
+              "candidate_ids": [
+                340832
+              ],
+              "passages": 2,
+              "anchored": true,
+              "resolved_reference": "L'affera parlamentara «Künstliche Intelligenz als Infrastruktur» dumonda tge pretensiuns che duain valair per centers da datas che mainan servetschs publics d'intelligenza artifiziala, inclusiv la sfradentada ed il consum d'aua.",
+              "semantic_enabled": false,
+              "coverage": {
+                "affairs": 326396,
+                "with_titles": 326395,
+                "with_text": 243,
+                "with_embeddings": 200,
+                "ever_classified": 255,
+                "aps_topics": 165
+              },
+              "warnings": []
+            },
+            "evidence_hash": "3f39f9fce6142ad471b0b771395cf0f77ade6938c746f365351c805acee8d53e",
+            "topics": [
+              {
+                "topic_id": "aps:6.1.9",
+                "evidence": {
+                  "unit_id": "text:340832:225335:de",
+                  "quote": "Künstliche Intelligenz ist die grundlegende Infrastruktur des 21. Jahrhunderts.",
+                  "source_url": "https://api.openparldata.ch/v1/affairs/340832/texts"
+                },
+                "name": "Digitalisierung / Numérisation",
+                "chapter": {
+                  "code": "6.1",
+                  "de": "Verkehr und Kommunikation",
+                  "fr": "Transports et communications"
+                },
+                "affair_id": 340832,
+                "scheme": "APS"
+              }
+            ],
+            "topic_errors": [],
+            "matched_affairs": [
+              {
+                "id": 340832,
+                "titles": {
+                  "de": "Künstliche Intelligenz als Infrastruktur",
+                  "it": "L'intelligenza artificiale come infrastruttura"
+                },
+                "source_url": "https://api.openparldata.ch/v1/affairs/340832",
+                "provenance": {
+                  "affair_id": 340832,
+                  "number": "26.4569",
+                  "authors": [
+                    {
+                      "name": "Min Li Marti",
+                      "role": "Author",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/contributors"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "date": "2026-10-02",
+                      "label": "Eingereicht",
+                      "actor": "",
+                      "source_url": "https://api.openparldata.ch/v1/affairs/340832/events"
+                    }
+                  ],
+                  "record_start_date": "2026-10-02",
+                  "original_url": "https://www.parlament.ch/de/ratsbetrieb/suche-curia-vista/geschaeft?AffairId=20264569",
+                  "attribution_note": "Authors are associated with the affair; this does not identify the speaker of every quoted passage.",
+                  "warnings": []
+                }
+              }
+            ],
+            "political_status": "political",
+            "needs_review": false,
+            "review_notice": null
+          }
+        },
+        {
+          "expected": "apolitical",
+          "passed": true,
+          "result": {
+            "index": 1,
+            "start": 229,
+            "end": 264,
+            "text": "Jau hai bavì in café questa damaun.",
+            "input_language": "de",
+            "sentence_english": "I drank a coffee this morning.",
+            "scope": "apolitical",
+            "scope_explanation": "The sentence \"Jau hai bavì in café questa damaun.\" is a personal statement about drinking coffee this morning. It does not mention any political entity, policy, election, or legislative matter. The article context discusses a parliamentary affair about AI infrastructure, but the sentence itself is unrelated to politics.",
+            "claims": [],
+            "status": "apolitical",
+            "model": "apertus-v1-5-70b",
+            "version": "archive-factcheck-v4",
+            "language": "rm",
+            "notice": "Full catalogue searched; source texts are retrieved for selected affairs. Missing evidence does not mean false. Scope and entailment are model judgments.",
+            "topics": [],
+            "topic_errors": [],
+            "matched_affairs": [],
+            "political_status": "apolitical",
+            "needs_review": false,
+            "review_notice": null
+          }
+        }
+      ]
+    }
+  ],
+  "notice": "Small regression/smoke set, not an independent accuracy benchmark. No claim of equal accuracy across languages."
+}

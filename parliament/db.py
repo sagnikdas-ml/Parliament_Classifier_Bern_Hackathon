@@ -8,6 +8,14 @@ from parliament.config import DATA
 
 LOCK = threading.RLock()
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS fact_checks (
+ id VARCHAR PRIMARY KEY, input VARCHAR, sentences VARCHAR, model VARCHAR, version VARCHAR,
+ created_at TIMESTAMP DEFAULT current_timestamp, language VARCHAR DEFAULT 'en', topic_ids VARCHAR DEFAULT '[]'
+);
+CREATE TABLE IF NOT EXISTS fact_check_sentences (
+ run_id VARCHAR, sentence_index INTEGER, result VARCHAR,
+ checked_at TIMESTAMP DEFAULT current_timestamp, PRIMARY KEY(run_id,sentence_index)
+);
 CREATE TABLE IF NOT EXISTS affairs (
  id BIGINT PRIMARY KEY, body_key VARCHAR, begin_date VARCHAR,
  titles VARCHAR, source_url VARCHAR, source_hash VARCHAR, raw VARCHAR,
@@ -72,6 +80,8 @@ def connect():
         try:
             connection.execute(SCHEMA)
             connection.execute("ALTER TABLE reviews ADD COLUMN IF NOT EXISTS prediction VARCHAR")
+            connection.execute("ALTER TABLE fact_checks ADD COLUMN IF NOT EXISTS language VARCHAR DEFAULT 'en'")
+            connection.execute("ALTER TABLE fact_checks ADD COLUMN IF NOT EXISTS topic_ids VARCHAR DEFAULT '[]'")
             yield connection
         finally:
             connection.close()
