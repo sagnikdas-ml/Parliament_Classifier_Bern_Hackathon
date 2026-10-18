@@ -1,0 +1,13 @@
+{
+  "reviewer_type": "ai_assisted",
+  "method": "Convenience sample of seven source-excerpt-reviewed affairs from the existing development audit. Specific substantive policy labels; do not add broad parent categories or routine procedural labels. Not independent human gold, not representative, not a held-out benchmark. No classifier tuning uses these results.",
+  "affairs": [
+    {"affair_id":66724,"language":"fr","labels":["aps:7.2.2"],"evidence":{"unit_id":"text:66724:157651:fr","quote":"L'armée dispose d'un effectif réglementaire de 100 000 personnes astreintes au service militaire."}},
+    {"affair_id":66189,"language":"de","labels":["aps:3.1.2"],"evidence":{"unit_id":"text:66189:153975:de","quote":"Wie verhindert der Bundesrat, dass Vermögenswerte des Regimes in der Schweiz versteckt werden?"}},
+    {"affair_id":329163,"language":"fr","labels":["aps:6.4.6"],"evidence":{"unit_id":"document:329163:879852:fr","quote":"à présenter chaque année au Conseil municipal l’état de la mise en œuvre de sa stratégie climatique."}},
+    {"affair_id":220737,"language":"de","labels":["aps:8.2.6"],"evidence":{"unit_id":"document:220737:114431:de","quote":"Der Kanton Zug muss das Gleichgewicht zwischen Aufbau von Reserven für schlechtere Zeiten und Abbau dieser Reserven aufgrund üppiger Steuer- und anderer Einnahmen finden."}},
+    {"affair_id":331392,"language":"de","labels":["aps:6.1.2"],"evidence":{"unit_id":"document:331392:888989:und","quote":"Der Stadtrat wird beauftragt zu prüfen, wie eine direkte Buslinie vom Albisrank uber die Rautistrasse bis Dunkelhölzli zu realisieren ist."}},
+    {"affair_id":70044,"language":"fr","labels":["aps:6.1.4"],"evidence":{"unit_id":"text:70044:182469:fr","quote":"La ligne ferroviaire Brig-Milano est fermée pendant plusieurs semaines l'été côté italien ces dernières années, ce qui rallonge passablement le temps de trajet de beaucoup de voyageurs de Romandie qui doivent passer par Zurich pour atteindre la capitale lombarde."}},
+    {"affair_id":154920,"language":"it","labels":["aps:8.5.1","aps:8.5.5"],"evidence":{"unit_id":"text:154920:141918:it","quote":"Il Consiglio federale è incaricato di modificare il Codice delle obbligazioni al fine di obbligare il datore di lavoro ad approntare dispositivi tesi a limitare l'utilizzo degli strumenti digitali da parte del dipendente al di fuori dell'orario di lavoro."}}
+  ]
+}

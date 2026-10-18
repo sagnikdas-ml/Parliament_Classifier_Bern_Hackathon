@@ -1,3 +1,13 @@
 .key
 .venv/
 __pycache__/
+data/
+logs/
+*.duckdb*
+.pytest_cache/
+.DS_Store
+node_modules/
+.wrangler/
+dist/
+.dev.vars
+.env

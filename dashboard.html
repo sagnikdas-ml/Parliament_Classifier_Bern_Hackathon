@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parliament · Topic Explorer</title>
+<style>
+  :root { color-scheme: light; --ink:#172c34; --muted:#596b72; --accent:#006d71; --line:#d8e2e3; }
+  * { box-sizing:border-box; }
+  body { margin:0; color:var(--ink); background:#f3f6f5; font:15px/1.55 system-ui,sans-serif; }
+  header { padding:28px max(24px,calc((100vw - 1280px)/2)); background:#12343b; color:white; }
+  header p { color:#c2d6d8; margin:5px 0; }
+  h1 { font-size:30px; letter-spacing:-1px; margin:0; }
+  h2 { font-size:20px; margin:0 0 12px; }
+  h3 { font-size:17px; margin:0 0 8px; }
+  main { max-width:1328px; margin:auto; padding:24px; }
+  .grid { display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start; }
+  section,.card { background:white; border:1px solid var(--line); border-radius:12px; padding:22px; margin-bottom:18px; }
+  label { display:block; margin:10px 0 5px; font-weight:600; }
+  input,textarea,select { width:100%; border:1px solid #aebec2; border-radius:6px; padding:10px; color:var(--ink); font:inherit; background:white; }
+  textarea { min-height:120px; resize:vertical; }
+  button { padding:10px 14px; border:0; border-radius:6px; background:var(--accent); color:white; font:inherit; cursor:pointer; margin:10px 6px 0 0; }
+  button.secondary { background:#e6eff0; color:var(--ink); }
+  button:disabled { opacity:.5; cursor:wait; }
+  .row { display:flex; gap:12px; align-items:end; }
+  .row > * { flex:1; min-width:0; }
+  .muted,small { color:var(--muted); }
+  .tag { display:inline-block; background:#e9f2f2; border-radius:4px; padding:2px 7px; margin:0 4px 5px 0; font-size:12px; }
+  .tag.relevant { background:#d8f0df; }
+  .tag.insufficient_evidence { background:#fff0ca; }
+  .result { padding:18px 0; border-bottom:1px solid var(--line); }
+  .result:last-child { border-bottom:0; }
+  .metrics { display:flex; flex-wrap:wrap; gap:12px 28px; margin-bottom:22px; }
+  .metrics strong { display:block; font-size:24px; }
+  .metrics span { color:var(--muted); font-size:12px; }
+  #status { position:sticky; top:0; background:#e5f0ef; border-radius:6px; padding:10px 16px; margin-bottom:18px; z-index:2; }
+  #status.error { background:#ffe6df; }
+  blockquote { margin:12px 0; padding:10px 14px; background:#f4f7f6; border-left:3px solid var(--accent); }
+  a { color:#00767c; }
+  header a { color:#c2d6d8; }
+  details { margin-top:12px; }
+  pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }
+  select[multiple] { height:180px; }
+  .check { display:flex; gap:8px; align-items:center; font-weight:400; }
+  .check input { width:auto; }
+  @media(max-width:850px) { .grid { grid-template-columns:1fr; } .row { flex-wrap:wrap; } }
+</style>
+<header>
+  <h1>Parliament / Topic Explorer</h1>
+  <p>Swiss parliamentary affairs · Multilingual discovery · Apertus classifications with evidence</p>
+  <small><a href="/docs">API documentation</a> · <a href="/chat-ui">Apertus chat</a></small>
+</header>
+<main>
+  <div id="status" role="status" aria-live="polite">Loading local catalogue…</div>
+  <div class="metrics" id="metrics"></div>
+  <div class="grid">
+    <aside>
+      <section>
+        <h2>Define a topic</h2>
+        <p class="muted">Approve a definition before searching or classifying. Saving edits creates a new version.</p>
+        <label for="topicName">Topic name</label><input id="topicName" value="Digitalisation" maxlength="200">
+        <button id="draft">Draft with Apertus</button>
+        <label for="definition">Inclusion and exclusion criteria</label><textarea id="definition" maxlength="4000" placeholder="Draft or enter a definition, then review it."></textarea>
+        <label for="keywords">Keywords DE / FR / IT</label><textarea id="keywords" style="min-height:75px" placeholder='{"de":[],"fr":[],"it":[]}'></textarea>
+        <button id="saveTopic">Approve & save new</button><button id="updateTopic" class="secondary">Update selected</button>
+      </section>
+      <section>
+        <h2>Classify an affair</h2>
+        <label for="affairId">OpenParlData ID</label><input id="affairId" type="number" min="1" value="70435">
+        <label for="language">Source language</label><select id="language"><option value="">Automatic</option value="de">German</option><option value="fr">French</option><option value="it">Italian</option><option value="rm">Romansh (unverified)</option></select>
+        <label for="classTopic">Classification</label><select id="classTopic"></select>
+        <button id="classify">Classify with evidence</button><button id="inspect" class="secondary">Inspect saved results</button>
+      </section>
+      <section>
+        <h2>Extend coverage</h2>
+        <p class="muted">A background scan reads content and calls Apertus. Limits count affairs; each affair can require several calls.</p>
+        <label for="jobLimit">Maximum affairs</label><input id="jobLimit" type="number" min="1" max="10000" value="20">
+        <label for="afterId">Scan IDs after</label><input id="afterId" type="number" min="0" value="0">
+        <button id="scan">Start capped scan</button>
+        <p class="muted">Uses the classification selector above and the parliament filter.</p>
+      </section>
+    </aside>
+    <div>
+      <section>
+        <h2>Discover affairs</h2>
+        <div class="row"><div><label for="query">Search meaning or words</label><input id="query" placeholder="Digital public services"></div><div style="flex:.35"><label for="body">Parliament key</label><input id="body" placeholder="All / CHE / BE"></div></div>
+        <label for="searchTopic">Or use an approved topic</label><select id="searchTopic"><option value="">Free-text search</option></select>
+        <label class="check"><input id="semantic" type="checkbox" checked> Include semantic matching where embeddings are available</label>
+        <button id="search">Find candidates</button><button id="classifyCandidates" class="secondary" disabled>Classify candidates (capped)</button>
+        <p class="muted" id="coverage">Candidates are suggestions, not verified topic matches.</p>
+        <div id="results"></div>
+      </section>
+      <section id="detailSection" hidden><h2>Evidence & review</h2><div id="detail"></div></section>
+      <section><h2>Browse saved APS classifications</h2><label for="savedLabel">Assigned topic</label><select id="savedLabel"></select><button id="browseSaved">Show classified affairs</button><div id="savedResults"></div></section>
+      <section><div class="row"><h2>Background jobs</h2><button class="secondary" id="refreshJobs">Refresh</button></div><div id="jobs"></div></section>
+      <section><h2>Evaluation</h2><p class="muted">Review 30–50 affairs and freeze the labels for evaluation. Frozen reviews cannot be edited. No APS accuracy is claimed before review.</p><button id="sample" class="secondary">Load review sample</button><button id="evaluation" class="secondary">Show evaluation report</button><div id="evaluationOutput"></div></section>
+    </div>
+  </div>
+</main>
+<script>
+  const element = id => document.getElementById(id);
+  let topics = [], candidates = [], currentResult = null;
+  function node(tag, text, className) { const result = document.createElement(tag); if (text !== undefined) result.textContent = text; if (className) result.className = className; return result; }
+  function message(text, error=false) { element('status').textContent = text; element('status').className = error ? 'error' : ''; }
+  async function api(path, body, method='POST') {
+    const response = await fetch(path, body === undefined ? {} : {method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const text = await response.text();
+    let data; try { data = JSON.parse(text); } catch { throw new Error('The server returned an unexpected response. Check its terminal logs.'); }
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
+    return data;
+  }
+  function action(id, handler) { element(id).onclick = async () => { const button = element(id); button.disabled=true; message('Working… Model downloads and first-time content retrieval can take a while.'); try { await handler(); } catch(error) { message(error.message,true); } finally { button.disabled=false; } }; }
+  function link(text, url) { const result = node('a',text); if (/^https?:\/\//.test(url || '')) { result.href=url; result.target='_blank'; result.rel='noopener noreferrer'; } return result; }
+  async function refresh() {
+    const counts = await api('/api/status');
+    element('metrics').replaceChildren();
+    for (const [key,label] of [['affairs','Affairs imported'],['aps_topics','APS topics'],['with_text','With cached text'],['with_embeddings','With embeddings'],['ever_classified','Ever classified']]) { const metric=node('div'); metric.append(node('strong',counts[key].toLocaleString()),node('span',label)); element('metrics').append(metric); }
+    topics = await api('/api/topics');
+    element('savedLabel').replaceChildren(new Option('Any APS topic','')); topics.filter(topic=>topic.scheme==='aps').forEach(topic=>element('savedLabel').add(new Option(topic.name,topic.id)));
+    for (const id of ['classTopic','searchTopic']) { const select=element(id), previous=select.value; select.replaceChildren(new Option(id==='classTopic'?'Standard APS topics':'Free-text search',id==='classTopic'?'aps':'')); topics.filter(topic=>topic.scheme==='custom').forEach(topic=>select.add(new Option(topic.name+' · v'+topic.version,topic.id))); if ([...select.options].some(option=>option.value===previous)) select.value=previous; }
+  }
+  function displayDecision(result) {
+    currentResult=result;
+    const target=element('detail'); target.replaceChildren(); element('detailSection').hidden=false;
+    target.append(node('h3','Affair '+result.affair_id+' · '+result.language),node('span',result.status,'tag '+result.status));
+    if(result.cached) target.append(node('span','Cached','tag'));
+    if(result.partial_content) target.append(node('p','Partial content: only the first three content chunks were assessed.','muted'));
+    if(!result.has_substantive_text) target.append(node('p','Insufficient substantive text in this language.','muted'));
+    for(const label of result.labels) { target.append(node('h3',topics.find(topic=>topic.id===label.topic_id)?.name || label.topic_id),node('blockquote',label.evidence.quote),link('Source passage',label.evidence.source_url)); }
+    for(const explanation of result.explanations || []) target.append(node('p',explanation));
+    for(const error of result.validation_errors || []) target.append(node('p','Evidence rejected: '+error));
+    const select=node('select'); select.multiple=true; select.id='reviewLabels'; select.setAttribute('aria-label','Correct topic labels');
+    const options=topics.filter(topic=>result.topic_id==='aps'?topic.scheme==='aps':topic.id===result.topic_id);
+    for(const topic of options) select.add(new Option(topic.name,topic.id,false,result.labels.some(label=>label.topic_id===topic.id)));
+    const label=node('label','Correct labels (select none for a negative review)'); label.htmlFor='reviewLabels';
+    target.append(label,select);
+    const freezeLabel=node('label',undefined,'check'), freeze=node('input'); freeze.type='checkbox'; freezeLabel.append(freeze,document.createTextNode('Freeze as an evaluation label'));
+    const notes=node('textarea'); notes.placeholder='Review notes'; notes.setAttribute('aria-label','Review notes');
+    const save=node('button','Save human review'); save.onclick=async()=>{save.disabled=true; try{await api('/api/affairs/'+result.affair_id+'/review',{topic_id:result.topic_id,language:result.language,labels:[...select.selectedOptions].map(option=>option.value),relevant:select.selectedOptions.length>0,frozen:freeze.checked,notes:notes.value});message('Review saved'+(freeze.checked?' and frozen.':'.'));}catch(error){message(error.message,true);}finally{save.disabled=false;}};
+    target.append(freezeLabel,notes,save);
+  }
+  async function inspect(identifier) {
+    element('affairId').value=identifier;
+    const record=await api('/api/affairs/'+identifier);
+    if(record.classifications.length) { displayDecision(record.classifications[0]); message('Showing a saved classification snapshot. Reclassify to check current content and definitions.'); }
+    else { element('detailSection').hidden=false; element('detail').replaceChildren(node('h3',Object.values(record.titles)[0]),node('p','No saved classification. Choose a language and classify this affair.')); message('Affair loaded.'); }
+  }
+  async function refreshJobs() {
+    const jobs=await api('/api/jobs'); element('jobs').replaceChildren();
+    for(const job of jobs) { const row=node('div',undefined,'result'); row.append(node('h3',job.id+' · '+job.status),node('p',job.progress.map(item=>item.count+' '+item.status).join(' / ')+' · cap '+job.total));
+      for(const actionName of ['cancel','resume']) { const button=node('button',actionName,'secondary'); button.onclick=async()=>{try{await api('/api/jobs/'+job.id+'/'+actionName,{});await refreshJobs();}catch(error){message(error.message,true);}};row.append(button); }
+      for(const error of job.errors) row.append(node('p',error.affair_id+': '+error.error,'muted')); element('jobs').append(row);
+    }
+    if(!jobs.length) element('jobs').append(node('p','No background jobs yet.','muted'));
+  }
+  action('draft',async()=>{const draft=await api('/api/topics/draft',{name:element('topicName').value});element('definition').value=draft.definition;element('keywords').value=JSON.stringify({de:draft.keywords_de,fr:draft.keywords_fr,it:draft.keywords_it},null,2);message('Review the definition, then approve and save.');});
+  async function saveTopic(update) { const selected=element('searchTopic').value; if(update&&!selected) throw new Error('Select a custom topic first.'); const payload={name:element('topicName').value,definition:element('definition').value,keywords:JSON.parse(element('keywords').value||'{}')};const result=await api('/api/topics'+(update?'/'+selected:''),payload,update?'PUT':'POST');await refresh();element('searchTopic').value=result.id;element('classTopic').value=result.id;message('Topic approved and saved.'); }
+  action('saveTopic',()=>saveTopic(false)); action('updateTopic',()=>saveTopic(true));
+  element('searchTopic').onchange=()=>{const topic=topics.find(item=>item.id===element('searchTopic').value);if(topic){element('topicName').value=topic.name;element('definition').value=topic.definition;element('keywords').value=topic.raw;element('classTopic').value=topic.id;}};
+  action('classify',async()=>{const result=await api('/api/affairs/'+element('affairId').value+'/classify',{topic_id:element('classTopic').value,language:element('language').value||null});displayDecision(result);await refresh();message('Classification complete. Review the supporting passages.');});
+  action('inspect',()=>inspect(element('affairId').value));
+  action('browseSaved',async()=>{const parameters=new URLSearchParams({topic_id:'aps'});if(element('savedLabel').value)parameters.set('label_id',element('savedLabel').value);const result=await api('/api/classifications?'+parameters);element('savedResults').replaceChildren();for(const item of result.results){const button=node('button',item.affair_id+' · '+item.language+' · '+item.status,'secondary');button.onclick=()=>displayDecision(item);element('savedResults').append(button);}message(result.results.length+' current saved classifications.');});
+  action('search',async()=>{const parameters=new URLSearchParams({q:element('query').value,semantic:element('semantic').checked});if(element('body').value)parameters.set('body',element('body').value);if(element('searchTopic').value)parameters.set('topic_id',element('searchTopic').value);const result=await api('/api/search?'+parameters);candidates=result.results;element('results').replaceChildren();for(const candidate of candidates){const row=node('div',undefined,'result');row.append(node('span',candidate.body_key,'tag'),node('span',candidate.has_full_text?'Text cached':'Title only','tag'),node('h3',candidate.titles.de||candidate.titles.fr||candidate.titles.it||Object.values(candidate.titles)[0]||String(candidate.id)));if(candidate.classification)row.append(node('span',candidate.classification.status+' (saved)','tag'));const button=node('button','Inspect #'+candidate.id,'secondary');button.onclick=()=>inspect(candidate.id).catch(error=>message(error.message,true));row.append(button);element('results').append(row);}element('classifyCandidates').disabled=!candidates.length;element('coverage').textContent=result.notice+' '+(result.semantic_enabled?'Semantic + keyword retrieval.':'Keyword-only retrieval; import embeddings to enable semantic matching.')+' '+result.elapsed_seconds+' seconds.';message(candidates.length+' candidates found.');});
+  action('classifyCandidates',async()=>{const topic=element('searchTopic').value||element('classTopic').value;const job=await api('/api/jobs',{topic_id:topic,limit:Number(element('jobLimit').value),affair_ids:candidates.map(item=>item.id)});await refreshJobs();message('Queued '+job.total+' affairs.');});
+  action('scan',async()=>{const job=await api('/api/jobs',{topic_id:element('classTopic').value,limit:Number(element('jobLimit').value),after_id:Number(element('afterId').value),body:element('body').value||null});await refreshJobs();message('Started capped scan '+job.id);});
+  action('refreshJobs',async()=>{await refreshJobs();message('Jobs refreshed.');});
+  action('sample',async()=>{const sample=await api('/api/evaluation/sample');element('evaluationOutput').replaceChildren();for(const item of sample.slice(0,50)){const button=node('button',item.affair_id+' · '+item.language+' · '+item.body_key,'secondary');button.onclick=()=>{element('affairId').value=item.affair_id;element('language').value=item.language;element('classTopic').value='aps';message('Selected review affair '+item.affair_id+'. Classify or inspect it.');};element('evaluationOutput').append(button);}message('Loaded first 50 of the frozen 200-affair sample.');});
+  action('evaluation',async()=>{element('evaluationOutput').replaceChildren(node('pre',JSON.stringify(await api('/api/evaluation?topic_id='+encodeURIComponent(element('classTopic').value)),null,2)));message('Evaluation report loaded.');});
+  Promise.all([refresh(),refreshJobs()]).then(()=>message('Ready. Local data coverage is shown above.')).catch(error=>message(error.message,true));
+  setInterval(()=>refreshJobs().catch(()=>{}),10000);
+</script>
+</html>

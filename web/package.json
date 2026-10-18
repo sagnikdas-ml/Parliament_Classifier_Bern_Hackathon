@@ -1,0 +1,13 @@
+{
+  "name": "parliament-desk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env local",
+    "build": "tsc --noEmit && wrangler deploy --env='' --dry-run --outdir dist",
+    "test": "tsx --test tests/*.test.ts",
+    "deploy": "wrangler deploy --env=''"
+  },
+  "dependencies": {"jose": "^6.1.0"},
+  "devDependencies": {"@cloudflare/workers-types": "5.20261018.1", "wrangler": "4.151.1", "typescript": "^5.9.0", "tsx": "^4.20.0", "@types/node": "^24.0.0"}
+}

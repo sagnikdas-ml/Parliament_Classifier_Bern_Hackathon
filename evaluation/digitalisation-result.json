@@ -1,0 +1,571 @@
+{
+  "manifest_hash": "8851c72f6147e8590f109074056f94110ec959cf5ea001be5be567e17b75b36e",
+  "model": "apertus-v1-5-8b",
+  "prompt_version": "named-policy-evidence-v3",
+  "definition": "Identify affairs whose substantive policy subject is digitalisation. Include digital public services, e-government, electronic identity and procedures, government IT and cloud infrastructure, cybersecurity, artificial intelligence, data protection and digital rights, digital media and platforms, broadband and digital connectivity. Include these subjects in any sector, not only public administration. Exclude affairs that merely mention a website, email, electronic document, or routine IT tool; exclude general administration, conventional broadcasting, postal services, and physical infrastructure unless a substantive digital-policy issue is established. Judge the target affair, not unrelated items in attached meeting minutes. Missing substantive evidence means insufficient evidence, not a negative.",
+  "groups": {
+    "all": {
+      "known_positives": 42,
+      "completed": 42,
+      "statuses": {
+        "insufficient_evidence": 22,
+        "relevant": 20
+      },
+      "recall_of_known_positives": 0.47619047619047616,
+      "recovered_so_far": 20,
+      "keyword_title_recall": 0.5238095238095238,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    },
+    "language:de": {
+      "known_positives": 25,
+      "completed": 25,
+      "statuses": {
+        "insufficient_evidence": 14,
+        "relevant": 11
+      },
+      "recall_of_known_positives": 0.44,
+      "recovered_so_far": 11,
+      "keyword_title_recall": 0.56,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    },
+    "source:dvs": {
+      "known_positives": 30,
+      "completed": 30,
+      "statuses": {
+        "insufficient_evidence": 17,
+        "relevant": 13
+      },
+      "recall_of_known_positives": 0.43333333333333335,
+      "recovered_so_far": 13,
+      "keyword_title_recall": 0.6,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    },
+    "language:fr": {
+      "known_positives": 11,
+      "completed": 11,
+      "statuses": {
+        "relevant": 5,
+        "insufficient_evidence": 6
+      },
+      "recall_of_known_positives": 0.45454545454545453,
+      "recovered_so_far": 5,
+      "keyword_title_recall": 0.5454545454545454,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    },
+    "language:it": {
+      "known_positives": 6,
+      "completed": 6,
+      "statuses": {
+        "insufficient_evidence": 2,
+        "relevant": 4
+      },
+      "recall_of_known_positives": 0.6666666666666666,
+      "recovered_so_far": 4,
+      "keyword_title_recall": 0.3333333333333333,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    },
+    "source:politmonitor": {
+      "known_positives": 12,
+      "completed": 12,
+      "statuses": {
+        "insufficient_evidence": 5,
+        "relevant": 7
+      },
+      "recall_of_known_positives": 0.5833333333333334,
+      "recovered_so_far": 7,
+      "keyword_title_recall": 0.3333333333333333,
+      "precision": null,
+      "f1": null,
+      "accuracy": null
+    }
+  },
+  "records": [
+    {
+      "affair_id": 161452,
+      "body": "CHE",
+      "language": "de",
+      "title": "Cybersicherheit. Hotline für Opfer von Cyberangriffen",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 16.822
+    },
+    {
+      "affair_id": 161610,
+      "body": "CHE",
+      "language": "fr",
+      "title": "Une stratégie pour combattre la désinformation",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 1.664
+    },
+    {
+      "affair_id": 235929,
+      "body": "CHE",
+      "language": "it",
+      "title": "Introduzione dello scambio automatico di informazioni relative a cripto-attività con Stati partner rilevanti dal 2026. Approvazione",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 1.749
+    },
+    {
+      "affair_id": 253612,
+      "body": "CHE",
+      "language": "de",
+      "title": "Krankenversicherung. Digitale Kommunikationskanäle konsequent nutzen und Ressourcen schonen",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 1.741
+    },
+    {
+      "affair_id": 302971,
+      "body": "BE",
+      "language": "de",
+      "title": "Eine sichere GPT-Lösung für die Kantonsverwaltung und den Grossen Rat",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.299
+    },
+    {
+      "affair_id": 303044,
+      "body": "BE",
+      "language": "fr",
+      "title": "Les écueils de la procédure électronique d’octroi du permis de construire dans le canton de Berne (eBau)",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.274
+    },
+    {
+      "affair_id": 303396,
+      "body": "BE",
+      "language": "de",
+      "title": "«Deepfakes im Klassenzimmer?» – Umgang mit digitaler und KI-generierter sexualisierter Gewalt an Berner Schulen",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.295
+    },
+    {
+      "affair_id": 303401,
+      "body": "BE",
+      "language": "fr",
+      "title": "Renforcer la sécurité juridique et l’efficience grâce à la numérisation intégrale des procédures d’octroi de permis de construire !",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.326
+    },
+    {
+      "affair_id": 327855,
+      "body": "VS",
+      "language": "de",
+      "title": "Deepfakes, pornografische Inhalte und digitale sexualisierte Gewalt im Kanton Wallis",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 3.304
+    },
+    {
+      "affair_id": 334122,
+      "body": "TG",
+      "language": "de",
+      "title": "Digitale Souveränität des Kantons Thurgau - Abhängigkeiten, Risiken und Strategie",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.301
+    },
+    {
+      "affair_id": 334708,
+      "body": "BE",
+      "language": "de",
+      "title": "Wie werden die Bürgerinnen und Bürger mit einem gesünderen, frei zugänglichen, öffentlichen WLAN-Netz unterstützt?",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 1.556
+    },
+    {
+      "affair_id": 335263,
+      "body": "ZG",
+      "language": "de",
+      "title": "Zugänglichkeit von e.Tax Zug und AGOV",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 1.787
+    },
+    {
+      "affair_id": 336324,
+      "body": "ZG",
+      "language": "de",
+      "title": "Informationssicherheitsgesetz (ISG) und dazugehörige Vollziehungsverordnung (ISV)",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 13.556
+    },
+    {
+      "affair_id": 336383,
+      "body": "OW",
+      "language": "de",
+      "title": "Aufforderung zur gesetzlichen Verankerung der vollständigen Freiwilligkeit, Gleichbehandlung und Kostenfreiheit der E-ID",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 21.581
+    },
+    {
+      "affair_id": 336768,
+      "body": "ZG",
+      "language": "de",
+      "title": "IT-Sicherheit und Schutz sensibler Registerdaten beim Amt für Informatik und Organisation (AIO) – Lehren aus dem Vorfall in Liechtenstein",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 3.017
+    },
+    {
+      "affair_id": 336944,
+      "body": "GE",
+      "language": "fr",
+      "title": "Projet de loi du. Conseil d'Etat autorisant le Conseil d'Etat à aliéner un actif informatique incorporel à l'association CARA pour un montant de 1 072 972 francs",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 4.856
+    },
+    {
+      "affair_id": 337241,
+      "body": "BE",
+      "language": "de",
+      "title": "Staatskanzlei. Ausgabenbewilligung für die Fach- und Konzernapplikationen sowie Digitalisierung der Kantonsverwaltung. Rahmenkredit 2027–2029",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 1.849
+    },
+    {
+      "affair_id": 337243,
+      "body": "BE",
+      "language": "fr",
+      "title": "Direction de l’économie, de l’énergie et de l’environnement (DEEE) : autorisation de dépenses pour les applications spécialisées et la transition numérique des offices/du Secrétariat général (SG) de la DEEE. Crédit-cadre 2027-2029",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 17.812
+    },
+    {
+      "affair_id": 337247,
+      "body": "BE",
+      "language": "de",
+      "title": "Rahmenkredit BVD 2027-2029 für Fachapplikationen und Digitalisierung",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 18.916
+    },
+    {
+      "affair_id": 337249,
+      "body": "BE",
+      "language": "fr",
+      "title": "Offices de la Direction des finances (Intendance des impôts, Administration des finances, Office du personnel) : autorisation de dépenses pour les applications spécialisées et les applications de groupe ainsi que pour la transformation numérique de l’administration cantonale. Crédit-cadre 2027 – 2029",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.439
+    },
+    {
+      "affair_id": 337367,
+      "body": "CHE",
+      "language": "it",
+      "title": "Legge sul sostegno alla banda larga (LSBL)",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.429
+    },
+    {
+      "affair_id": 337611,
+      "body": "OW",
+      "language": "de",
+      "title": "Nachtrag zur Vereinbarung über das Informatikleistungszentrum der Kantone Obwalden und Nidwalden",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 3.383
+    },
+    {
+      "affair_id": 337826,
+      "body": "BE",
+      "language": "de",
+      "title": "Wie weiter mit NFFS?",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 12.59
+    },
+    {
+      "affair_id": 337865,
+      "body": "TG",
+      "language": "de",
+      "title": "Baugesuche sollen digital abgewickelt werden können",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 1.379
+    },
+    {
+      "affair_id": 338499,
+      "body": "AG",
+      "language": "de",
+      "title": "Gesetz über die digitale Aufgabenerfüllung (Digitalgesetz, DiG)",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 1.624
+    },
+    {
+      "affair_id": 338683,
+      "body": "BE",
+      "language": "fr",
+      "title": "Retards de paiement et de numérisation pour les RHT et gestion des impôts à la source",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.453
+    },
+    {
+      "affair_id": 338686,
+      "body": "BE",
+      "language": "de",
+      "title": "Wer trägt die Verantwortung für die «Sicherheitslücke»?",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 1.426
+    },
+    {
+      "affair_id": 339489,
+      "body": "OW",
+      "language": "de",
+      "title": "Verpflichtungskredit für die Weiterentwicklung der Steuerdeklarationslösung eTAX Natürliche Personen",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 3.743
+    },
+    {
+      "affair_id": 339739,
+      "body": "BL",
+      "language": "de",
+      "title": "Kantonaler Richtplan (KRIP), Anpassung 2026 Abbau / Deponie",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 4.7
+    },
+    {
+      "affair_id": 339810,
+      "body": "ZH",
+      "language": "de",
+      "title": "Gesetz über egovpartner",
+      "reference": "dvs",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 4.17
+    },
+    {
+      "affair_id": 92397,
+      "body": "ZH",
+      "language": "de",
+      "title": "Gesetz über die Information und den Datenschutz (Anpassung an die geänderte europäische Datenschutzgesetzgebung)",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 4.197
+    },
+    {
+      "affair_id": 172438,
+      "body": "SZ",
+      "language": "de",
+      "title": "Gesetz über die digitale Verwaltung",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 3.156
+    },
+    {
+      "affair_id": 23023,
+      "body": "351",
+      "language": "de",
+      "title": "Warum kommuniziert die Stadt Bern über X (vormals Twitter)?",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 1.998
+    },
+    {
+      "affair_id": 229833,
+      "body": "FR",
+      "language": "de",
+      "title": "Cyberverteidigung in unseren Freiburger Gemeinden und beim Staat Freiburg",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.469
+    },
+    {
+      "affair_id": 227057,
+      "body": "VD",
+      "language": "fr",
+      "title": "Protection des données personnelles (LPrD) – non-respect des dispositions de la Loi",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 0.316
+    },
+    {
+      "affair_id": 198921,
+      "body": "GE",
+      "language": "fr",
+      "title": "Rapport d'activité de la commission de contrôle de gestion (année parlementaire 2020-2021)",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 3.905
+    },
+    {
+      "affair_id": 225987,
+      "body": "VD",
+      "language": "fr",
+      "title": "Apporter une réponse urgente aux problématiques en matière de smartphones, applications et réseaux sociaux, dans le cadre de l'école vaudoise",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "insufficient_evidence",
+      "elapsed_seconds": 2.988
+    },
+    {
+      "affair_id": 224328,
+      "body": "VD",
+      "language": "fr",
+      "title": "Le club des 5G à la conquête du canton de Vaud",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 3.234
+    },
+    {
+      "affair_id": 338579,
+      "body": "TI",
+      "language": "it",
+      "title": "Digitalizzazione e IA: non lasciamo indietro le nostre PMI",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": true,
+      "status": "relevant",
+      "elapsed_seconds": 2.403
+    },
+    {
+      "affair_id": 175378,
+      "body": "TI",
+      "language": "it",
+      "title": "Regolamentare le attività airB&B in Ticino",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 1.834
+    },
+    {
+      "affair_id": 175537,
+      "body": "TI",
+      "language": "it",
+      "title": "Richiesta di stanziamento di un credito d’investimento di CHF 3'147'084 per l’acquisto e l’implementazione e di un credito annuale ricorrente di CHF 275'081.20 per 5 anni per le spese correnti di supporto e manutenzione per un software per il calcolo dei valori di stima del parco immobiliare del Cantone Ticino",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 3.948
+    },
+    {
+      "affair_id": 175562,
+      "body": "TI",
+      "language": "it",
+      "title": "Rapporto del Consiglio di Stato sull’iniziativa parlamentare 30 maggio 2022 presentata nella forma elaborata da Fiorenzo Dadò e Alessio Ghisla per la modifica dell’art. 5 della Legge cantonale sull’energia dell’8 febbraio 1994 (No all’uso dell’energia idroelettrica per l’estrazione (mining) di criptovalute)",
+      "reference": "politmonitor",
+      "expected": "relevant",
+      "keyword_baseline": false,
+      "status": "relevant",
+      "elapsed_seconds": 4.868
+    }
+  ],
+  "diagnostics": {
+    "api_or_pipeline_errors": 0,
+    "without_substantive_text": 10,
+    "with_quote_validation_errors": 20,
+    "partial_content": 10
+  },
+  "limitations": [
+    "Human editorial positive references, not complete binary ground truth. Unlisted affairs are unlabelled, not negative.",
+    "DVS and PolitMonitor overlap; additional sample excludes every DVS ID. They are not independent label sources.",
+    "This estimates recovery of curated positives, not discovery precision or full-corpus recall.",
+    "Missing sources, invalid evidence, abstentions and API errors remain in the completed-run denominator.",
+    "Keyword baseline uses titles in the selected language; Apertus uses title and fetched source content.",
+    "DVS cohort is skewed toward German. Additional language samples are small and not representative.",
+    "Reference labels and membership are never passed to the inference request."
+  ]
+}
