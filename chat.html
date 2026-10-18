@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apertus Chat</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font: 16px system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; background: #f5f6f8; color: #20232a; }
+  h1 { font-size: 26px; }
+  #messages { min-height: 250px; }
+  .message { padding: 14px 18px; border-radius: 12px; background: white; margin: 12px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .user { background: #e2ebff; }
+  form { display: flex; gap: 8px; }
+  input { flex: 1; min-width: 0; padding: 12px; border: 1px solid #b8bfcc; border-radius: 8px; font: inherit; }
+  button { background: #264fc7; color: white; border: 0; border-radius: 8px; padding: 12px 20px; font: inherit; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: wait; }
+  #status { min-height: 24px; color: #596273; }
+</style>
+<h1>Apertus Chat</h1>
+<p>Ask a question. Each message is answered independently.</p>
+<div id="messages" role="log" aria-label="Chat messages" aria-live="polite"></div>
+<form id="chat">
+  <input id="message" aria-label="Your message" placeholder="Ask Apertus…" maxlength="4000" required autofocus>
+  <button id="send">Send</button>
+</form>
+<p id="status" role="status"></p>
+<script>
+  const form = document.querySelector('#chat');
+  const input = document.querySelector('#message');
+  const button = document.querySelector('#send');
+  const status = document.querySelector('#status');
+  const messages = document.querySelector('#messages');
+
+  function addMessage(label, text, className = '') {
+    const bubble = document.createElement('div');
+    bubble.className = 'message ' + className;
+    bubble.textContent = label + ': ' + text;
+    messages.appendChild(bubble);
+    bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message || button.disabled) return;
+    addMessage('You', message, 'user');
+    input.value = '';
+    button.disabled = true;
+    status.textContent = 'Apertus is thinking…';
+    try {
+      const response = await fetch('/chat?' + new URLSearchParams({ message }), { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed.');
+      addMessage('Apertus', data.reply);
+      status.textContent = '';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+      input.focus();
+    }
+  });
+</script>
+</html>
