@@ -48,13 +48,12 @@ export default function ArchivePulse() {
             const level = affair.body === 'CHE' ? 'Federal' : /^[A-Z]{2}$/.test(affair.body || '') ? 'Cantonal' : 'Municipal'
             return <article key={affair.affair_id} className="min-w-0 rounded-xl border border-line bg-surface/60 p-5">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="meta font-medium text-accent">{affair.number || affair.affair_id}</span>
                 <span className="meta">{affair.body_name || BODY_NAMES[affair.body] || affair.body}</span>
                 <span className="meta">{level}{affair.language ? ` · ${affair.language.toUpperCase()}` : ''}</span>
                 {affair.date && <span className="meta">{affair.date}</span>}
               </div>
               <h3 className="mt-2 line-clamp-2 font-serif text-[19px] font-medium leading-snug text-ink">{affair.title}</h3>
-              <CalmGraph nodes={nodes} sourceLabel={`Affair ${affair.affair_id}`} empty="No topics assigned." large hoverDetails />
+              <CalmGraph nodes={nodes} sourceLabel="Parliamentary record" empty="No topics assigned." large hoverDetails />
               {affair.url && <a className="mt-3 inline-block text-[12px] text-accent hover:underline" href={affair.url} target="_blank" rel="noreferrer">Open source record ↗</a>}
             </article>
           })}
