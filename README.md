@@ -2,6 +2,8 @@
 
 ParlaRadar helps journalists check political claims against Swiss parliamentary records. It also classifies OpenParlData affairs into APS or user-defined topics. Built by team VectorZero.
 
+Try the five multilingual, archive-grounded inputs in [examples.md](examples.md).
+
 ## Run locally
 
 1. Set up Python and install dependencies:
