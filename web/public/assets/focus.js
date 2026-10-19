@@ -143,6 +143,7 @@ async function inspect(record) {
     };
   });
   if (!byId("detail").open) byId("detail").showModal();
+  window.dispatchEvent(new CustomEvent("polinews:document", {detail:{id:record.id}}));
 }
 byId("closeDetail").onclick = () => byId("detail").close();
 byId("clear").onclick = () => { state.selected.clear(); render(); };
@@ -165,3 +166,10 @@ byId("evaluation").onclick = async () => {
 byId("closeEvaluation").onclick = () => byId("evaluationDialog").close();
 controls();
 window.addEventListener("resize", render);
+
+// Read-only context for the optional PoliBot widget. No source text crosses this boundary.
+window.PoliNewsResearchContext = () => ({
+  affair_ids: state.results.map(record => record.id).slice(0, 10),
+  topic_id: state.plan?.topic_id || "aps", model: state.plan?.model || "apertus-v1-5-70b",
+  documents: state.results.map(record => ({id:record.id, title:record.translation?.title_english || originalTitle(record)})).slice(0, 10)
+});

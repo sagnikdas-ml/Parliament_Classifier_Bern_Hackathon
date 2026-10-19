@@ -2,6 +2,12 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+# Optional local server secrets; .env is ignored by Git.
+if [[ -f "$ROOT/.env" ]]; then
+    set -a
+    source "$ROOT/.env"
+    set +a
+fi
 PYTHON="${PYTHON:-$ROOT/.venv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     echo "Create .venv and install requirements-embeddings.txt first. See README.md."
