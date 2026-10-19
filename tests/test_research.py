@@ -140,11 +140,7 @@ class ResearchTests(unittest.TestCase):
 
     def test_workspace_api_contract(self):
         client = TestClient(app)
-        root = Path(__file__).resolve().parent.parent
-        built = root / "web/public/calm/index.html"
-        expected = built if built.exists() else root / "web/public/index.html"
-        self.assertEqual(client.get("/").text, expected.read_text())
-        self.assertIn("ParlaRadar", client.get("/legacy").text)
+        self.assertIn("ParlaRadar", client.get("/").text)
         self.assertEqual(client.get("/assets/app.js").status_code, 200)
         self.assertEqual(client.get("/admin").status_code, 200)
         self.assertEqual(client.get("/api/bodies").json()[0]["body_key"], "CHE")

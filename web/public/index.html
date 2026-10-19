@@ -4,7 +4,6 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ParlaRadar</title>
 <link rel="stylesheet" href="/assets/style.css"><link rel="stylesheet" href="/assets/editorial.css"><script src="/assets/focus.js" defer></script><script src="/assets/graphs.js" defer></script><script src="/assets/factcheck.js" defer></script>
-<link rel="stylesheet" href="/assets/polibot.css"><script src="/assets/polibot.js" defer></script>
 </head>
 <body>
 <header><button id="historyMenu" class="menuTool" type="button" aria-label="Open search history" aria-expanded="false">☰</button><a class="brand" href="/" aria-label="ParlaRadar home"><svg class="mastheadMark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="12" fill="currentColor"/><path d="M12 29V11h10a6 6 0 0 1 0 12h-5" stroke="white" stroke-width="3"/><path d="m20 29 4 4 7-8" stroke="#7dd3fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ParlaRadar<span class="brandPeriod">.</span></span></a><div class="headerTools"><button id="searchTab" class="searchTool" type="button"><span aria-hidden="true">⌕</span> Search</button><div class="languageSwitch" role="group" aria-label="Output language"><button type="button" data-language="en" aria-pressed="true">EN</button><button type="button" data-language="de" aria-pressed="false">DE</button><select id="moreLanguage" aria-label="More output languages"><option value="more">More</option><option value="fr">Français</option><option value="it">Italiano</option><option value="rm">Rumantsch</option></select></div></div></header>
@@ -88,29 +87,5 @@
 </div>
 <dialog id="detail"><button id="closeDetail" class="secondary">Close</button><div id="detailContent"></div></dialog>
 <dialog id="evaluationDialog"><button id="closeEvaluation" class="secondary">Close</button><h2>Digitalisation benchmark</h2><div id="benchmark"></div><p class="hint">A separate, fixed-topic test—not a quality score for your current question. Positive-only references cannot establish precision. No scheduled data sync.</p></dialog>
-<section id="polibot" aria-label="PoliBot evidence assistant">
-  <div id="polibotPanel" hidden role="region" aria-labelledby="polibotHeading">
-    <div class="polibotHead"><div><h2 id="polibotHeading">PoliBot</h2><span>Evidence briefings · English</span></div><button id="polibotClose" type="button" aria-label="Close PoliBot">×</button></div>
-    <p class="polibotIntro">A little help with the public record. I reuse existing results and citations.</p>
-    <div class="polibotActions"><button id="polibotSummarize" type="button">Summarize Results</button><button id="polibotExplain" type="button">Explain Document</button></div>
-    <label for="polibotDocument">Document to explain</label><select id="polibotDocument"><option value="">Open or select a cited record</option></select>
-    <p id="polibotStatus" role="status" aria-live="polite">Run a search or check a story to begin.</p>
-    <div id="polibotOutput" tabindex="0" aria-label="PoliBot briefing"></div>
-    <section class="polibotChat" aria-labelledby="polibotChatHeading">
-      <h3 id="polibotChatHeading">Ask about this briefing</h3>
-      <div id="polibotMessages" role="log" aria-live="polite" aria-label="Questions and answers"></div>
-      <form id="polibotChatForm">
-        <label for="polibotQuestion">Your question</label>
-        <div class="polibotChatRow"><input id="polibotQuestion" maxlength="1000" required placeholder="Summarize or explain a document first" disabled autocomplete="off"><button id="polibotSend" type="submit" disabled>Ask</button></div>
-      </form>
-      <p class="polibotChatHint">Ask about the document or its wider context. General background is labeled; check document citations.</p>
-    </section>
-    <div class="polibotSpeech"><label><input id="polibotVoice" type="checkbox"> Read briefings aloud</label><button id="polibotStop" type="button" disabled>Stop Speaking</button></div>
-    <p id="polibotSpeechNote">Speech is optional. Enabling it sends the briefing text to ElevenLabs.</p>
-  </div>
-  <button id="polibotLauncher" type="button" aria-controls="polibotPanel" aria-expanded="false" aria-label="Open PoliBot">
-    <svg class="polibotRobot" viewBox="0 0 64 68" fill="none" aria-hidden="true"><path d="M32 6v8" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="6" r="4" fill="#93e0e8"/><rect x="10" y="15" width="44" height="35" rx="13" fill="#edf6ff" stroke="currentColor" stroke-width="2"/><rect x="16" y="22" width="32" height="17" rx="7" fill="#18385d"/><g class="polibotEyes" fill="#93e0e8"><rect x="23" y="27" width="4" height="7" rx="2"/><rect x="37" y="27" width="4" height="7" rx="2"/></g><path d="M27 44h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 28v9m50-9v9" stroke="#93e0e8" stroke-width="4" stroke-linecap="round"/><path d="M23 53h18l4 9H19l4-9Z" fill="#c7dcf2"/><path d="M26 55h12" stroke="currentColor" stroke-width="2"/></svg><span>PoliBot</span>
-  </button>
-</section>
 </body>
 </html>

@@ -11,8 +11,8 @@ interface Env {
 }
 
 const keysets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
-const reads = new Set(["/api/polibot/status", "/api/status", "/api/topics", "/api/bodies", "/api/search", "/api/classifications", "/api/evaluation", "/api/digitalisation", "/api/digitalisation/benchmark", "/api/jobs", "/api/jobs/estimate"]);
-const writes = new Set(["/api/polibot/summary", "/api/polibot/speech", "/api/polibot/chat", "/api/fact-checks", "/api/topics", "/api/topics/draft", "/api/brief", "/api/research/search", "/api/research/analyse", "/api/jobs"]);
+const reads = new Set(["/api/status", "/api/topics", "/api/bodies", "/api/search", "/api/classifications", "/api/evaluation", "/api/digitalisation", "/api/digitalisation/benchmark", "/api/jobs", "/api/jobs/estimate"]);
+const writes = new Set(["/api/fact-checks", "/api/topics", "/api/topics/draft", "/api/brief", "/api/research/search", "/api/research/analyse", "/api/jobs"]);
 export function allowed(method: string, path: string): boolean {
   return method === "GET" && (reads.has(path) || /^\/api\/affairs\/\d+$/.test(path)) ||
     method === "GET" && /^\/api\/jobs\/[a-f0-9]{16}$/.test(path) ||
@@ -24,7 +24,7 @@ function secured(response: Response): Response {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "no-referrer");
-  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'");
   headers.set("Cache-Control", "no-store");
   return new Response(response.body, {status: response.status, headers});
 }
@@ -39,7 +39,7 @@ export default {
     if (!url.pathname.startsWith("/api/")) {
       const calmRoot = url.pathname === "/calm" || url.pathname === "/calm/";
       const calmAsset = calmRoot || /^\/calm\/[a-zA-Z0-9._/-]+$/.test(url.pathname) && !url.pathname.includes("..");
-      if (!["/", "/index.html", "/legacy", "/about", "/about.html", "/assets/app.js", "/assets/focus.js", "/assets/factcheck.js", "/assets/style.css", "/assets/editorial.css", "/assets/graphs.js", "/assets/polibot.css", "/assets/polibot.js"].includes(url.pathname) && !calmAsset || !["GET", "HEAD"].includes(request.method)) return failure(404, "Not found");
+      if (!["/", "/index.html", "/legacy", "/about", "/about.html", "/assets/app.js", "/assets/focus.js", "/assets/factcheck.js", "/assets/style.css"].includes(url.pathname) && !calmAsset || !["GET", "HEAD"].includes(request.method)) return failure(404, "Not found");
       if (url.pathname === "/about") {
         url.pathname = "/about.html";
         return secured(await env.ASSETS.fetch(new Request(url.toString(), request)));

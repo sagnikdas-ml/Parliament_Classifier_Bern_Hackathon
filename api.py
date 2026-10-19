@@ -19,7 +19,6 @@ from parliament import classifier, jobs, retrieval, judge
 from parliament.config import ROOT
 from parliament.evaluation import report, evaluation_sample, live_run_report
 from parliament.ingest import ensure_affair
-from parliament.polibot import Context as PoliBotContext, ChatRequest as PoliBotChatRequest
 
 
 @asynccontextmanager
@@ -421,32 +420,3 @@ def check_news_sentence(identifier: str, index: int, force_archive: bool = False
 def translate_news_sentence(identifier: str, index: int, language: Literal["en", "de", "fr", "it", "rm"]):
     from parliament.factcheck import translate_result
     return translate_result(identifier, index, language)
-
-
-# PoliBot accepts source identifiers, never arbitrary narration or API credentials.
-@app.get("/api/polibot/status")
-def polibot_status():
-    from parliament.polibot import speech_available
-    return JSONResponse({"speech_available": speech_available(), "language": "en"}, headers={"Cache-Control": "no-store"})
-
-
-@app.post("/api/polibot/summary")
-def polibot_summary(request: PoliBotContext):
-    from parliament.polibot import briefing
-    return JSONResponse(briefing(request), headers={"Cache-Control": "no-store"})
-
-
-@app.post("/api/polibot/speech")
-def polibot_speech(request: PoliBotContext):
-    from fastapi.responses import Response
-    from parliament.polibot import briefing, synthesize
-    result = briefing(request)
-    if request.briefing_hash and request.briefing_hash != result["briefing_hash"]:
-        raise HTTPException(409, "The evidence changed. Generate a fresh briefing before speaking.")
-    return Response(synthesize(result["text"]), media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
-
-
-@app.post("/api/polibot/chat")
-def polibot_chat(request: PoliBotChatRequest):
-    from parliament.polibot import chat
-    return JSONResponse(chat(request), headers={"Cache-Control": "no-store"})
