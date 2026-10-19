@@ -136,6 +136,56 @@ def topic_relationships(identifier, ranked_topics):
     return {"nodes": nodes, "edges": edges, "total_topics": len(ranked_topics)}
 
 
+def topic_examples(identifier, limit=4):
+    """Return the completed affairs with the most distinct APS labels."""
+    rows = db.query("""
+        SELECT i.affair_id, i.result, a.body_key, a.begin_date, a.titles, a.source_url, a.raw,
+               b.raw AS body_record
+        FROM job_items i JOIN affairs a ON a.id=i.affair_id
+        LEFT JOIN bodies b ON b.id=json_extract_string(a.raw,'$.body_id')
+        WHERE i.job_id=? AND i.status='done' AND json_valid(i.result)
+        ORDER BY i.affair_id
+    """, [identifier])
+    best = {}
+    for row in rows:
+        try:
+            result = json.loads(row["result"])
+            labels = result.get("labels") or []
+            if result.get("status") != "relevant" or not labels:
+                continue
+            distinct = {label.get("topic_id"): label for label in labels if label.get("topic_id")}
+            if not distinct:
+                continue
+            candidate = {**row, "labels": list(distinct.values()), "language": result.get("language")}
+            if row["affair_id"] not in best or len(candidate["labels"]) > len(best[row["affair_id"]]["labels"]):
+                best[row["affair_id"]] = candidate
+        except (TypeError, ValueError, AttributeError):
+            continue
+    selected = sorted(best.values(), key=lambda row: (-len(row["labels"]), -int(row["affair_id"])))[:limit]
+    examples = []
+    for row in selected:
+        try:
+            titles = json.loads(row["titles"] or "{}")
+        except (TypeError, ValueError):
+            titles = {}
+        try:
+            raw = json.loads(row["raw"] or "{}")
+        except (TypeError, ValueError):
+            raw = {}
+        try:
+            body_record = json.loads(row["body_record"] or "{}")
+        except (TypeError, ValueError):
+            body_record = {}
+        title = next((titles.get(language) for language in ("en", "de", "fr", "it", "rm") if titles.get(language)), None)
+        examples.append({
+            "affair_id": row["affair_id"], "number": raw.get("number"), "title": title or f"Parliamentary affair {row['affair_id']}",
+            "body": row["body_key"], "body_name": body_record.get("name_en") or body_record.get("name_de") or body_record.get("name"),
+            "date": str(row["begin_date"] or "")[:10] or None,
+            "language": row["language"], "url": row["source_url"], "labels": row["labels"],
+        })
+    return examples
+
+
 def control_job(identifier, action):
     job = get_job(identifier)
     if action == "cancel":

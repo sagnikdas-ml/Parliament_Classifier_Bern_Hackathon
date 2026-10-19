@@ -1,4 +1,4 @@
-# PoliNews frontend
+# VectorZero web gateway
 
 The main demo needs no Node build: from the repository root run
 `bash scripts/run_demo.sh`, then open http://127.0.0.1:8000.

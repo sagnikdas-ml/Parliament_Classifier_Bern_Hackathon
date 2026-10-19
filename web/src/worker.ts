@@ -24,7 +24,7 @@ function secured(response: Response): Response {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "no-referrer");
-  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; media-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'");
   headers.set("Cache-Control", "no-store");
   return new Response(response.body, {status: response.status, headers});
 }
@@ -37,12 +37,17 @@ export default {
     const url = new URL(request.url);
     const local = env.LOCAL_DEMO === "true" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
     if (!url.pathname.startsWith("/api/")) {
-      if (!["/", "/index.html", "/about", "/about.html", "/assets/app.js", "/assets/focus.js", "/assets/factcheck.js", "/assets/style.css", "/assets/editorial.css", "/assets/graphs.js", "/assets/polibot.css", "/assets/polibot.js"].includes(url.pathname) || !["GET", "HEAD"].includes(request.method)) return failure(404, "Not found");
+      const calmRoot = url.pathname === "/calm" || url.pathname === "/calm/";
+      const calmAsset = calmRoot || /^\/calm\/[a-zA-Z0-9._/-]+$/.test(url.pathname) && !url.pathname.includes("..");
+      if (!["/", "/index.html", "/legacy", "/about", "/about.html", "/assets/app.js", "/assets/focus.js", "/assets/factcheck.js", "/assets/style.css", "/assets/editorial.css", "/assets/graphs.js", "/assets/polibot.css", "/assets/polibot.js"].includes(url.pathname) && !calmAsset || !["GET", "HEAD"].includes(request.method)) return failure(404, "Not found");
       if (url.pathname === "/about") {
         url.pathname = "/about.html";
         return secured(await env.ASSETS.fetch(new Request(url.toString(), request)));
       }
-      return secured(await env.ASSETS.fetch(request));
+      if (url.pathname === "/") url.pathname = "/calm/index.html";
+      if (url.pathname === "/legacy") url.pathname = "/index.html";
+      if (calmRoot) url.pathname = "/calm/index.html";
+      return secured(await env.ASSETS.fetch(new Request(url.toString(), request)));
     }
     if (!allowed(request.method, url.pathname)) return failure(404, "API route not exposed");
     if (url.search.length > 12000) return failure(414, "Query too long");
