@@ -33,7 +33,7 @@ export default function ArchivePulse() {
       <div><div className="label">Model-judge agreement</div>{q ? <><div className="mt-1 font-serif text-[32px] leading-none text-ink">{Math.round(100 * q.micro_f1)}%<span className="text-[15px] text-muted"> micro-F1</span></div><div className="mt-2 text-[13px] text-muted">{run.quality.reviewed} judged · exact topic match {Math.round(100 * q.exact_match)}%</div></> : <div className="mt-1 text-[14px] text-muted">No judged cases yet.</div>}<div className="mt-1 text-[12px] text-muted">Agreement with a second LLM (70B), not human-verified accuracy.</div></div>
       <div className="min-w-0 md:col-span-2">
         <div className="label text-[15px]">Topic relationships · highest volume first</div>
-        <CalmGraph nodes={topics} edges={topicEdges} sourceLabel="APS archive classification" empty="Topics will appear as affairs receive classifications." large showTopicLinks={false} />
+        <CalmGraph nodes={topics} edges={topicEdges} sourceLabel="APS archive classification" empty="Topics will appear as affairs receive classifications." large showTopicLinks={false} hoverDetails />
       </div>
       <div className="min-w-0 md:col-span-2">
         <div className="label text-[15px]">Four affairs · richest topic coverage</div>
@@ -54,7 +54,7 @@ export default function ArchivePulse() {
                 {affair.date && <span className="meta">{affair.date}</span>}
               </div>
               <h3 className="mt-2 line-clamp-2 font-serif text-[19px] font-medium leading-snug text-ink">{affair.title}</h3>
-              <CalmGraph nodes={nodes} sourceLabel={`Affair ${affair.affair_id}`} empty="No topics assigned." large />
+              <CalmGraph nodes={nodes} sourceLabel={`Affair ${affair.affair_id}`} empty="No topics assigned." large hoverDetails />
               {affair.url && <a className="mt-3 inline-block text-[12px] text-accent hover:underline" href={affair.url} target="_blank" rel="noreferrer">Open source record ↗</a>}
             </article>
           })}

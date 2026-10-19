@@ -57,42 +57,168 @@ human-labelled sample that includes negatives (see Section 5).
 
 ## 2. Architecture
 
-ParlaRadar uses one FastAPI process and one DuckDB file. The React interface is
-served at `/`; the retained full workstation is available at `/legacy`. Both call
-the same API and data store. The optional Cloudflare Worker is a separate gateway
-and is not required for local use.
+### Deployed local shape
+
+The demo is a **single-host, single-Uvicorn-worker application**. The local
+launcher binds FastAPI to `127.0.0.1:8000`, disables access logging and does not
+enable autoreload. `api.py` serves the built React UI at `/` from
+`web/public/calm/`, mounts its static files under `/calm/`, retains the original
+workstation at `/legacy`, and exposes the OpenAPI document at `/docs`. The React
+source lives in `frontend/`; `npm --prefix frontend run build` writes its bundle
+to `web/public/calm/`. The legacy application and the React app call the same
+FastAPI process and the same DuckDB file.
+
+At runtime, `PARL_DATA_DIR` selects the data directory; otherwise it is
+`<repository>/data`. DuckDB is `parliament.duckdb` inside that directory. The
+connection layer sets a 1 GB DuckDB memory limit and two DuckDB threads, runs
+schema migrations on connect, serializes in-process access with a re-entrant
+lock, and takes an OS file lock for each connection. Separate `worker.lock`,
+`continuous-classification.lock`, `judge.lock`, and `inference.lock` files
+coordinate background and model work across processes. This design targets one
+application worker and a local persistent disk; it is not a multi-replica
+database design.
 
 ```mermaid
-flowchart LR
-  O[OpenParlData exports and API] --> I[Bootstrap and text import]
-  I --> D[(DuckDB archive, embeddings, topics, jobs)]
-  U[React UI at /] --> A[FastAPI]
-  L[Legacy workstation at /legacy] --> A
-  A --> R[Keyword + multilingual E5 retrieval]
-  R --> D
-  A --> K[Apertus 8B / 70B endpoint]
-  K --> A
-  A --> D
-  W[Classification worker] --> D
-  W --> K
-  J[Blind 70B judge] --> D
-  J --> K
-  A -. optional .-> C[Cloudflare Worker gateway]
+flowchart TB
+  subgraph Sources[External source systems]
+    EXP[OpenParlData exports<br/>affairs, bodies, texts, documents]
+    API[OpenParlData REST API<br/>metadata, missing text, contributors, events]
+  end
+  subgraph Host[One host · one Uvicorn worker]
+    subgraph UI[Interfaces]
+      REACT[React / Vite app<br/>frontend → web/public/calm]
+      LEGACY[Legacy workstation<br/>web/public]
+    end
+    FAST[FastAPI · api.py<br/>/api/* · /docs · /legacy]
+    subgraph Core[parliament/ application services]
+      ING[ingest.py · download.py<br/>bootstrap, text hydration, provenance cache]
+      RET[retrieval.py · news_retrieval.py<br/>title anchor, lexical + vector search, evidence passages]
+      CLF[classifier.py<br/>APS/custom classification + quote validation]
+      FC[factcheck.py<br/>sentence scope → assessment → independent review → correction]
+      JOB[jobs.py<br/>durable APS job + item state]
+      JUDGE[judge.py<br/>blind 70B reference judgments]
+      EMB[embeddings.py<br/>multilingual E5 · offline passage vectors]
+    end
+    DB[(DuckDB<br/>data/parliament.duckdb)]
+  end
+  MODEL[Apertus 8B / 70B<br/>OpenAI-compatible endpoint]
+  EXP --> ING
+  API <--> ING
+  REACT <--> FAST
+  LEGACY <--> FAST
+  FAST --> RET
+  FAST --> FC
+  FAST --> CLF
+  FAST --> JOB
+  ING --> DB
+  RET <--> DB
+  EMB --> DB
+  CLF <--> DB
+  FC <--> DB
+  JOB <--> DB
+  JUDGE <--> DB
+  JOB --> CLF
+  JUDGE --> MODEL
+  CLF <--> MODEL
+  FC <--> MODEL
+  CLF --> EMB
+  RET --> EMB
 ```
 
-### Components
+### Data ingestion and retrieval
+
+`python -m parliament bootstrap` downloads and imports the affair metadata,
+bodies, APS workbook and challenge label files. It creates translated title
+units, but **does not imply that all substantive text is already imported**.
+`python -m parliament bulk-texts` imports the public text export; documents can
+be imported separately. At request time `ensure_affair` and `fetch_content`
+hydrate missing affair metadata, texts and (when needed) extracted documents
+from the REST API, recording a fetch marker and normalized text units in DuckDB.
+Contributor and event provenance is fetched separately, limited to 100 records
+per relation, and cached in `settings`.
+
+Embedding is an explicit preparation pipeline, not a separate online vector
+database. `export-units` emits source units as JSONL; `embed` uses the pinned
+multilingual E5 small model to encode normalized passages (480 tokens with a
+64-token overlap) into 384-dimensional vectors and checkpoints batches in
+Parquet; `import-embeddings` validates and inserts vectors into DuckDB. The
+manifest in `settings.embedding_manifest` identifies model, revision and
+preprocessing pipeline. Search computes up to 32 lexical terms against stored
+units and, when a compatible embedding manifest and local model are available,
+cosine similarity against valid embedded passages using DuckDB list functions.
+It takes up to `max(100, 3 × requested_limit)` results from each ranking and
+combines them using reciprocal-rank fusion (`1 / (60 + rank)`). Without an
+available embedding manifest/model, lexical retrieval still runs and the API
+reports semantic search as unavailable.
+
+News retrieval adds a separate grounding path: it first looks for an exact
+quoted affair title, then a title contained in the sentence; a narrowly matched
+referential continuation can inherit the prior named affair. If no affair is
+anchored, the scope pass supplies terms in German, French and Italian to a
+whole-word multilingual lexical/vector search. It retains up to eight candidate
+affairs, hydrates at most three missing-text candidates, and builds substantive
+evidence windows with no more than three passages per affair. Titles are
+excluded as claim evidence. Candidate discovery and successful entailment are
+separate outcomes: an empty or weak match yields *unverified*, not *false*.
+
+### Durable state model
+
+All server-side state lives in DuckDB; JSON payload columns retain model output
+and source snapshots while relational keys support filtering and resumability.
+
+| Tables | Stored state and purpose |
+|:--|:--|
+| `affairs`, `bodies`, `units`, `fetches` | OpenParlData metadata, parliament bodies, multilingual title/text/document units with hashes and source URLs, and per-affair fetch markers. |
+| `topics`, `source_labels`, `embeddings`, `settings` | APS/custom topic definitions and versions; imported source labels; E5 vectors; active embedding manifest, topic-vector cache, and cached provenance. |
+| `classifications`, `reviews` | Versioned model predictions keyed by affair/topic/taxonomy/language/content/model/prompt; human review labels, notes, frozen status, and the prediction snapshot reviewed. |
+| `jobs`, `job_items` | Resumable batch configuration and one status/result/error/attempt counter per affair-language item. A classification prediction is also cached in `classifications`. |
+| `llm_judgments` | Separate 70B reference result tied to the prediction hash, judge version, reference labels, exact-match flag, and TP/FP/FN counts. |
+| `fact_checks`, `fact_check_sentences`, `fact_check_translations` | Submitted story and sentence offsets, per-sentence result/evidence hashes, and on-demand cached explanation translations. |
+
+Browser-local state is intentionally distinct: the React app stores recent story
+history, selected language/theme, and local UI state in browser `localStorage`.
+It does not make those histories shared server records. The legacy review API
+stores review rows in DuckDB.
+
+### Components and API boundaries
 
 | Component | Technology | Role |
 |:--|:--|:--|
-| Archive store | DuckDB (`data/parliament.duckdb`) | Affairs, text units, APS/custom topics, embeddings, classifications, jobs, fact-check runs, and LLM judgments. File locks serialize database writes and worker ownership. |
-| Import | `python -m parliament bootstrap` and `bulk-texts` | Resumable OpenParlData import; loads APS taxonomy and challenge labels. Bootstrap imports metadata, not all document text. |
-| Retrieval | Multilingual keyword ranking + exact cosine similarity, reciprocal-rank fusion | Finds candidate affairs/passages; vector scoring runs in DuckDB over the locally embedded subset. |
-| Embeddings | multilingual E5 small, 384 dimensions; 480-token windows with 64-token overlap | Cross-language retrieval and shortlist of APS topics; CPU, Apple MPS, CUDA, or the supplied Slurm workflow. |
-| Inference | Apertus 8B / 70B through an OpenAI-compatible API | Classification, scope, claim checks, independent review, correction, translation, and custom-topic drafting. |
-| API | FastAPI, one Uvicorn worker | Fact-checks, archive research, classification, provenance, and job status. It also returns ranked topic relationships and four completed affairs with the richest APS label sets for their individual topic graphs. The browser UI and API share the local service origin. |
-| Background work | In-process classification and judge threads | Persistent resumable APS archive classification (up to 300,000 affairs) and blind 70B reference judgments. Inference is remote; DuckDB and retrieval use local CPU/storage. |
-| UI | React, Vite, Tailwind, Framer Motion; legacy vanilla JS | Sentence-level editorial review, evidence and topic/author relationships, a policy map of saved digitalisation classifications, the ranked APS topic graph followed by four per-affair topic graphs, archive progress, and full research/classification workspace. The policy map can display older saved prompt versions and labels them as archived predictions. |
-| Optional gateway | Cloudflare Worker (`web/src/worker.ts`) | Allow-listed proxy for a separately configured deployment. It is not used by the local demo and is not deployed. |
+| User interface | React 18, Vite 5, Tailwind 3, Framer Motion; source in `frontend/src/` | The main ParlaRadar news checker, policy-map view, source/author/topic dossiers, language/theme controls, and archive-run visualizations. Static production assets are generated into `web/public/calm/`. |
+| FastAPI boundary | `api.py`, Pydantic request/response validation | Serves `/api/status`, `/api/search`, `/api/affairs/*`, `/api/classifications`, `/api/jobs*`, `/api/research/*`, `/api/fact-checks*`, `/api/evaluation*`, and static application routes. `PARL_BACKEND_TOKEN` optionally requires a bearer token; cross-origin writes are rejected. |
+| Classification service | `parliament/classifier.py` | Builds versioned cache keys, loads source units, excludes title-only evidence, optionally narrows 165 APS topics to 12 by E5 similarity, asks the selected model for structured topic IDs and source-unit IDs, validates exact substantive quotations in code, then persists the prediction. Models are 8B or 70B; default is 70B, while the automatic 300k APS archive run explicitly uses 8B. |
+| Fact-check service | `parliament/factcheck.py`, `news_retrieval.py`, `provenance.py` | Persists a story and sentence offsets; runs one sentence request at a time from the UI. Scope classification, evidence assessment, independent entailment review, correction generation/review, and source-linked APS/custom topics are separate model steps. Supported/contradicted results require validated evidence IDs and source substrings. Explanations translate on demand and cache by target language. |
+| Retrieval and embeddings | `retrieval.py`, `news_retrieval.py`, `embeddings.py` | Exact title anchoring and bounded source windows for news; lexical plus E5 nearest-passage retrieval for unanchored search and APS shortlisting. Embedding work can run on CPU, Apple MPS or CUDA; Slurm scripts are provided but cluster execution is unverified. |
+| APS archive runner | `jobs.py` in a daemon thread | On application startup, if affairs and APS topics exist, ensures one persistent full-corpus APS job covering up to 300,000 imported affairs using 8B. `jobs`/`job_items` track progress; item errors are retried up to three times for the continuous run. It is resumable and restarts queued work after process restart. The 100-case calibration endpoint measures a separate selected model; it does not change the automatic run's 8B model. |
+| Live quality judge | `judge.py` in a daemon thread | Reads completed classification items, hides each prediction, independently labels cached substantive source text with Apertus 70B, validates its exact quotations, and writes reference labels against the prediction hash. The UI's “agreement” scores are agreement with this same-family LLM, not ground-truth accuracy. Inference calls are serialized by a process lock and a file lock. |
+| Legacy and optional gateway | `web/public/`; Cloudflare Worker source in `web/src/worker.ts` | `/legacy` retains the original workstation. The Worker has a static-asset route allowlist, API allowlist, optional Cloudflare Access JWT validation and backend bearer-token forwarding; local use does not need it. It is not deployed as part of the supported local demo. |
+
+### Request and background sequences
+
+**News fact-check.** `POST /api/fact-checks` accepts up to 12,000 characters,
+language `en/de/fr/it/rm`, up to three custom topic IDs, and the selected 8B/70B
+model. It stores the input and sentence offsets in `fact_checks`. The browser
+then calls `POST /api/fact-checks/{id}/sentences/{index}` sequentially, allowing
+partial results as each sentence finishes. For a sentence, the backend searches
+for an affair anchor, asks the model for scope (and search terms if needed),
+retrieves bounded evidence, asks for per-claim verdicts by evidence ID, checks
+each selected quote in code, and independently reviews supported/contradicted
+claims for entailment, entities, dates and procedural status. A contradicted
+claim may trigger up to two correction drafts, each source-checked before it is
+shown. Cited affairs are enriched with cached provenance and APS topics. Results
+are stored in `fact_check_sentences`; requested translations are generated and
+stored separately. User history remains in browser storage.
+
+**Archive classification and judging.** FastAPI lifespan starts the classifier
+and judge threads. The classifier ensures a persistent APS job exists for the
+first 300,000 affair IDs in the local database; each queued `job_item` loads
+content and calls the model unless a matching classification cache entry
+already exists. Results and status are committed item by item. The judge polls
+completed items, assesses them without access to their predictions, and stores
+separate judgments. `GET /api/jobs/{id}` joins persisted job progress with topic
+counts, co-occurrence edges, four completed labelled affairs, finish-rate
+projections, frozen-human-review metrics and LLM-judge agreement. Thus graph and
+progress displays read the current saved job; they are not generated UI samples.
 
 ### Fact-check flow
 
