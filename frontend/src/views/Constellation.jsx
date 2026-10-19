@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Fingerprint, Pin, ShieldCheck, ShieldX, Terminal } from 'lucide-react'
 import { getRadar } from '../lib/api.js'
+import { mapBotContext } from '../lib/polibot.js'
+import { useBotPublisher } from '../components/PoliBotProvider.jsx'
 import { BODY_NAMES } from '../lib/bodies.js'
 import ArchivePulse from '../components/ArchivePulse.jsx'
 import { Cursor, useTypewriter } from '../components/Typewriter.jsx'
@@ -119,6 +121,7 @@ function useColumns() {
 
 /** Policy map: saved digitalisation affairs as headlines; hover to inspect assigned APS topics. */
 export default function Constellation({ backendReady }) {
+  const onBotContext = useBotPublisher('constellation')
   const cols = useColumns()
   const [data, setData] = useState(null)
   const [hover, setHover] = useState(null)
@@ -134,6 +137,7 @@ export default function Constellation({ backendReady }) {
 
   const rows = useMemo(() => (data?.affairs || []), [data])
 
+  useEffect(() => { onBotContext?.(mapBotContext({ affairs: rows, model, pinned })) }, [rows, model, pinned, onBotContext])
   const activeId = pinned ?? hover
   const fed = rows.filter((a) => a.level === 'Federal').length
   const cantonal = rows.filter((a) => a.level === 'Cantonal').length

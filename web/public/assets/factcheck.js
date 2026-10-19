@@ -665,4 +665,16 @@
   el('moreLanguage').addEventListener('change', () => { if (el('moreLanguage').value !== 'more') setOutputLanguage(el('moreLanguage').value); });
   setOutputLanguage(outputLanguage);
   renderHistory();
+  // Identifiers only: PoliBot reloads canonical evidence from FastAPI.
+  window.PoliNewsStoryContext = () => {
+    const ordered = [...results.values()].sort((a, b) => (a.index === activeSentence ? -1 : b.index === activeSentence ? 1 : a.index - b.index));
+    const documents = new Map();
+    for (const result of ordered) {
+      for (const claim of result.claims || []) for (const evidence of claim.evidence || []) {
+        const affair = (result.matched_affairs || []).find(item => item.id === evidence.affair_id);
+        if (evidence.affair_id) documents.set(evidence.affair_id, {id:evidence.affair_id, title:Object.values(affair?.titles || {}).find(Boolean) || `Affair ${evidence.affair_id}`});
+      }
+    }
+    return {fact_check_id:run?.id || null, sentence_indices:[...results.keys()], documents:[...documents.values()].slice(0, 10)};
+  };
 })();

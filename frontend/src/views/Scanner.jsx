@@ -5,6 +5,8 @@ import { analyseText, translateSentence } from '../lib/api.js'
 import { Cursor, useTypewriter } from '../components/Typewriter.jsx'
 import { Segmented, Switch, norm } from '../components/ui.jsx'
 import CalmGraph from '../components/CalmGraph.jsx'
+import { scannerBotContext } from '../lib/polibot.js'
+import { useBotPublisher } from '../components/PoliBotProvider.jsx'
 
 // verdict -> theme colour variable (muted sage / terracotta / ochre)
 const COL = { supported: 'var(--ok)', contradicted: 'var(--bad)', unverified: 'var(--warn)', error: 'var(--warn)', not_factual: 'var(--muted)', neutral: 'var(--muted)' }
@@ -162,6 +164,7 @@ function Marginalia({ entry, index, onClose, review, setReview, onReplace, onEdi
 // ---------------------------------------------------------------------------------------------- view
 /** Fact-check view: paste a story, a soft scan line reads it, verdicts appear inline, notes open in the margin. */
 export default function Scanner({ language, setLanguage, autoRun = false }) {
+  const onBotContext = useBotPublisher('scanner')
   const [text, setText] = useState('')
   const [checkedLanguage, setCheckedLanguage] = useState('EN')
   const [model, setModel] = useState('70B')
@@ -318,6 +321,9 @@ export default function Scanner({ language, setLanguage, autoRun = false }) {
   }
   const holdDetails = () => clearTimeout(hoverTimer.current)
   const activeIndex = selected?.index ?? hoveredIndex
+  useEffect(() => {
+    onBotContext?.(scannerBotContext({ runId: phase === 'edit' ? null : runId, entries: phase === 'edit' ? {} : entries, model, activeIndex: selected?.index }))
+  }, [runId, entries, model, phase, selected?.index, onBotContext])
   useEffect(() => { const esc = (e) => e.key === 'Escape' && setSelected(null); window.addEventListener('keydown', esc); return () => window.removeEventListener('keydown', esc) }, [])
 
   const pieces = useMemo(() => {

@@ -47,6 +47,29 @@ test("rate limits and missing local backend fail clearly", async () => {
   const missing = env(); missing.BACKEND_URL = "";
   assert.equal((await worker.fetch(new Request("http://localhost/api/status"), missing)).status, 503);
 });
+
+test("PoliBot assets and routes retain authentication and permit local audio playback", async () => {
+  assert.ok(allowed("GET", "/api/polibot/status"));
+  assert.ok(allowed("POST", "/api/polibot/summary"));
+  assert.ok(allowed("POST", "/api/polibot/chat"));
+  assert.equal(allowed("GET", "/api/polibot/chat"), false);
+  assert.ok(allowed("POST", "/api/polibot/speech"));
+  assert.equal(allowed("GET", "/api/polibot/speech"), false);
+  assert.equal(allowed("POST", "/api/polibot/proxy"), false);
+  for (const path of ["/assets/polibot.js", "/assets/polibot.css", "/assets/editorial.css", "/assets/graphs.js"]) {
+    const response = await worker.fetch(new Request("http://localhost" + path), env());
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-security-policy") || "", /media-src 'self' blob:/);
+  }
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => new Response(new Uint8Array([73,68,51]), {headers:{"Content-Type":"audio/mpeg"}});
+  try {
+    const response = await worker.fetch(new Request("http://localhost/api/polibot/speech", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({affair_ids:[1]})}), env());
+    assert.equal(response.headers.get("content-type"), "audio/mpeg");
+    assert.deepEqual([...new Uint8Array(await response.arrayBuffer())], [73,68,51]);
+    assert.equal((await worker.fetch(new Request("https://desk.example/api/polibot/status"), env())).status, 503);
+  } finally { globalThis.fetch = original; }
+});
 test("serves the calm UI at the root, preserves the legacy workspace and restricts asset paths", async () => {
   const seen: string[] = [];
   const assets = env();
