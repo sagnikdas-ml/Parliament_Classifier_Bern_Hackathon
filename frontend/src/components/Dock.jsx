@@ -10,8 +10,8 @@ const ITEMS = [
 export default function Dock({ view, setView, theme, setTheme }) {
   return (
     <>
-    <motion.nav initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.6 }}
-      className="fixed bottom-7 left-1/2 z-50 flex -translate-x-1/2 items-center justify-center gap-1 rounded-full border border-line bg-surface/90 p-1.5 backdrop-blur-md"
+    <motion.nav initial={{ x: '-50%', y: 24, opacity: 0 }} animate={{ x: '-50%', y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.6 }}
+      className="fixed bottom-7 left-1/2 z-50 flex items-center justify-center gap-1 rounded-full border border-line bg-surface/90 p-1.5 backdrop-blur-md"
       style={{ boxShadow: '0 18px 40px -20px rgb(var(--shadow) / .35)' }} aria-label="Views">
       {ITEMS.map(({ id, label, Icon }) => {
         const on = view === id
