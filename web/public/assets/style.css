@@ -45,7 +45,7 @@ textarea{width:100%;resize:vertical;min-height:120px;font:inherit;padding:12px;b
 .claim p{margin:7px 0}.correction{font-weight:600}.factCard.apolitical{background:#f5f6f7}
 @media(max-width:600px){header{flex-wrap:wrap}header nav{order:3;width:100%}.factActions{flex-wrap:wrap}}
 
-/* PoliNews editorial workspace */
+/* VectorZero editorial workspace */
 :root{color-scheme:light;--ink:#182321;--muted:#687773;--line:#dce5df;--accent:#176c53;--accent-dark:#104b3b;--paper:#f4f7f4;--mint:#e7f1eb;--gold:#d8a743;--red:#a4443c;--shadow:0 12px 36px #173b2b0c}
 body{height:auto;min-height:100dvh;overflow-x:hidden;overflow-y:auto;background:var(--paper);color:var(--ink);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
 header{position:sticky;top:0;z-index:5;max-width:none;width:100%;padding:12px max(24px,calc((100vw - 1180px)/2));background:#fbfcfaed;backdrop-filter:blur(16px);border-bottom:1px solid #dce5df;box-shadow:0 3px 14px #10251e08}

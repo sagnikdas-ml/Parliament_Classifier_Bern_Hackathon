@@ -1,4 +1,4 @@
-# PoliNews
+# VectorZero
 
 ## User story
 

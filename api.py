@@ -32,8 +32,11 @@ async def lifespan(app):
     jobs.stop_worker()
 
 
-app = FastAPI(title="PoliNews", lifespan=lifespan)
+app = FastAPI(title="ParlaRadar", lifespan=lifespan)
 app.mount("/assets", StaticFiles(directory=ROOT / "web" / "public" / "assets"), name="assets")
+calm_dist = ROOT / "web" / "public" / "calm"
+if calm_dist.exists():
+    app.mount("/calm", StaticFiles(directory=calm_dist, html=True), name="calm-ui")
 
 
 @app.middleware("http")
@@ -72,6 +75,14 @@ async def inference_connection_error(request, error):
 
 @app.get("/")
 def home():
+    if (ROOT / "web" / "public" / "calm" / "index.html").exists():
+        return FileResponse(ROOT / "web" / "public" / "calm" / "index.html")
+    return FileResponse(ROOT / "web" / "public" / "index.html")
+
+
+@app.get("/legacy")
+def legacy_home():
+    """Keep the complete original workstation available while the calm shell is rolled out."""
     return FileResponse(ROOT / "web" / "public" / "index.html")
 
 
@@ -170,6 +181,12 @@ def digitalisation_benchmark():
 def affair(affair_id: int, model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"):
     record = ensure_affair(affair_id)
     record["titles"] = json.loads(record["titles"])
+    body_rows = db.query("""SELECT b.raw FROM affairs a JOIN bodies b
+        ON b.id=json_extract_string(a.raw,'$.body_id') WHERE a.id=? LIMIT 1""", [affair_id])
+    if body_rows:
+        body = json.loads(body_rows[0]["raw"])
+        record["body_key"] = body.get("body_key") or record.get("body_key")
+        record["body_name"] = body.get("name_en") or body.get("name_de") or body.get("name")
     record["units"] = db.query("SELECT * FROM units WHERE affair_id=?", [affair_id])
     record["classifications"] = [json.loads(item["result"]) for item in db.query("SELECT result FROM classifications WHERE affair_id=? ORDER BY created_at DESC", [affair_id])]
     with classifier.model_context(model):
@@ -265,35 +282,37 @@ def bodies():
 
 
 @app.get("/api/classifications")
-def classifications(topic_id: str = "aps", label_id: str | None = None, limit: int = Query(default=50, ge=1, le=200), after_id: int = Query(default=0, ge=0), model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"):
+def classifications(topic_id: str = "aps", label_id: str | None = None, limit: int = Query(default=50, ge=1, le=200), after_id: int = Query(default=0, ge=0), model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b", include_stale: bool = False):
     version = classifier.topic_context(topic_id)[1]
     from parliament.config import PROMPT_VERSION
     records = db.query("""SELECT result FROM classifications c
-        WHERE topic_id=? AND topic_version=? AND model=? AND prompt_version=? AND affair_id>?
+        WHERE topic_id=? AND topic_version=? AND model=? AND (? OR prompt_version=?) AND affair_id>?
         AND (? IS NULL OR EXISTS (SELECT 1 FROM json_each(c.result, '$.labels') label
           WHERE json_extract_string(label.value,'$.topic_id')=?))
         QUALIFY row_number() OVER (PARTITION BY affair_id,language ORDER BY created_at DESC)=1
-        ORDER BY affair_id,language LIMIT ?""", [topic_id, version, model, PROMPT_VERSION, after_id, label_id, label_id, limit])
+        ORDER BY affair_id,language LIMIT ?""", [topic_id, version, model, include_stale, PROMPT_VERSION, after_id, label_id, label_id, limit])
     results = [json.loads(item["result"]) for item in records]
     if len(results) == limit and results[0]["affair_id"] != results[-1]["affair_id"]:
         # The cursor is an affair id, so never split one affair's languages across pages.
         results = [item for item in results if item["affair_id"] != results[-1]["affair_id"]]
     with classifier.model_context(model):
-        current_results = [item for item in results if item.get("model") == model and classifier.result_is_current(item)]
+        current_results = [item for item in results if item.get("model") == model and (include_stale or classifier.result_is_current(item))]
     return {"results": current_results,
             "next_after_id": max((item["affair_id"] for item in results), default=None),
-            "note": "Current saved predictions only; human corrections remain separate review records."}
+            "note": "Saved predictions; some may use an earlier prompt version." if include_stale else "Current saved predictions only; human corrections remain separate review records."}
 
 
 @app.get("/api/jobs")
-def list_jobs():
-    jobs.ensure_continuous_classification()
-    candidates = db.query("SELECT id FROM jobs WHERE status IN ('queued','running','paused','cancelled','completed_with_errors') ORDER BY created_at DESC LIMIT 20")
+def list_jobs(topic_id: str | None = Query(default=None, max_length=200)):
+    automatic = jobs.ensure_continuous_classification()
+    if topic_id == "aps" and automatic:
+        return [automatic]
+    candidates = db.query("SELECT id FROM jobs WHERE status IN ('queued','running','paused','cancelled','completed_with_errors') AND (? IS NULL OR topic_id=?) ORDER BY created_at DESC LIMIT 20", [topic_id, topic_id])
     records = [jobs.get_job(item["id"]) for item in candidates]
     available = [item for item in records if item["status"] in ("queued", "running") or item["resumable"]][:5]
     if available:
         return available
-    completed = db.query("SELECT id FROM jobs WHERE status='completed' ORDER BY created_at DESC LIMIT 1")
+    completed = db.query("SELECT id FROM jobs WHERE status='completed' AND (? IS NULL OR topic_id=?) ORDER BY created_at DESC LIMIT 1", [topic_id, topic_id])
     return [jobs.get_job(completed[0]["id"])] if completed else []
 
 
@@ -330,11 +349,12 @@ def job_estimate(model: str = Query(default="apertus-v1-5-70b"), topic_id: str =
 def job(identifier: str):
     record = jobs.get_job(identifier)
     record["topic_distribution"] = jobs.topic_distribution(identifier) if record["kind"] == "classify" else []
+    record["topic_graph"] = jobs.topic_relationships(identifier, record["topic_distribution"]) if record["kind"] == "classify" else {"nodes": [], "edges": [], "total_topics": 0}
     record["quality"] = live_run_report(identifier, record["topic_id"]) if record["kind"] == "classify" else None
     if record["quality"] is not None:
         human = record["quality"]
         record["quality"] = {**human, **judge.report(identifier), "human_reviewed": human["reviewed"], "human_scores": human["scores"]}
-    record["topic_graph"] = jobs.topic_relationships(identifier, record["topic_distribution"])
+    record["topic_examples"] = jobs.topic_examples(identifier, limit=4) if record["kind"] == "classify" else []
     if record.get("started_at"):
         timing = db.query("SELECT coalesce(elapsed_seconds,0)+CASE WHEN status='running' THEN date_diff('second',started_at,current_timestamp) ELSE 0 END AS seconds FROM jobs WHERE id=?", [identifier])[0]
         record["elapsed_seconds"] = timing["seconds"]

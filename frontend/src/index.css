@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Two soothing themes. Values are "R G B" so Tailwind can apply opacity. No pure black/white, no neon. */
+:root, [data-theme='paper'] {
+  --bg: 243 240 232;      /* warm paper */
+  --surface: 250 248 243;
+  --sunk: 235 231 221;
+  --ink: 46 44 40;        /* soft charcoal, not black */
+  --muted: 109 105 97;
+  --line: 217 212 200;
+  --accent: 46 111 125;   /* slate teal */
+  --ok: 62 125 94;        /* sage */
+  --bad: 168 76 68;       /* terracotta */
+  --warn: 160 115 32;     /* ochre */
+  --aps: 98 92 140;       /* dusty violet */
+  --shadow: 60 50 30;
+}
+[data-theme='dusk'] {
+  --bg: 32 36 41;         /* soft slate, not black */
+  --surface: 40 45 52;
+  --sunk: 27 31 36;
+  --ink: 226 222 212;
+  --muted: 156 156 150;
+  --line: 62 69 77;
+  --accent: 126 190 200;
+  --ok: 134 196 160;
+  --bad: 226 140 130;
+  --warn: 224 186 108;
+  --aps: 172 166 214;
+  --shadow: 0 0 0;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  html { font-size: 17px; }
+  body { @apply bg-bg font-sans text-ink antialiased; transition: background-color .4s ease, color .4s ease; line-height: 1.6; }
+  ::selection { background: rgb(var(--accent) / .25); }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 8px; border: 2px solid rgb(var(--bg)); }
+  textarea::placeholder { color: rgb(var(--muted) / .7); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+}
+
+@layer components {
+  .label { @apply font-sans text-[13px] font-medium text-muted; }
+  .meta { @apply font-mono text-[12px] text-muted; }
+  .card { @apply rounded-2xl border border-line bg-surface; box-shadow: 0 1px 2px rgb(var(--shadow) / .05), 0 18px 40px -26px rgb(var(--shadow) / .28); }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[14px] font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-50; }
+  .btn-primary { @apply btn bg-accent text-bg hover:opacity-90; }
+  .btn-quiet { @apply btn border border-line bg-surface text-ink hover:border-accent/60; }
+}

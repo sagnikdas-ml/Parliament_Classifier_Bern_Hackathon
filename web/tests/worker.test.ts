@@ -47,3 +47,16 @@ test("rate limits and missing local backend fail clearly", async () => {
   const missing = env(); missing.BACKEND_URL = "";
   assert.equal((await worker.fetch(new Request("http://localhost/api/status"), missing)).status, 503);
 });
+test("serves the calm UI at the root, preserves the legacy workspace and restricts asset paths", async () => {
+  const seen: string[] = [];
+  const assets = env();
+  assets.ASSETS.fetch = async (request: Request) => { seen.push(new URL(request.url).pathname); return new Response("static"); };
+  const root = await worker.fetch(new Request("https://desk.example/"), assets);
+  const calm = await worker.fetch(new Request("https://desk.example/calm/"), assets);
+  const legacy = await worker.fetch(new Request("https://desk.example/legacy"), assets);
+  const js = await worker.fetch(new Request("https://desk.example/calm/assets/app.js"), assets);
+  assert.equal(root.status, 200); assert.equal(calm.status, 200); assert.equal(legacy.status, 200); assert.equal(js.status, 200);
+  assert.deepEqual(seen, ["/calm/index.html", "/calm/index.html", "/index.html", "/calm/assets/app.js"]);
+  assert.equal((await worker.fetch(new Request("https://desk.example/calm/../api/status"), assets)).status, 503);
+  assert.equal(seen.length, 4, "normalized API paths must not be served as static assets");
+});

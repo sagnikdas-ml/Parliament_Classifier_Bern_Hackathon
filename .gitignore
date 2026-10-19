@@ -9,5 +9,6 @@ logs/
 node_modules/
 .wrangler/
 dist/
+web/public/calm/
 .dev.vars
 .env
