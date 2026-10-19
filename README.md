@@ -1,5 +1,29 @@
 # PoliNews
 
+## Quick start (local demo)
+
+1. Put your Keera API key in a file named `.key` in this project folder (next to
+   `api.py`). Restrict access to it with `chmod 600 .key`. Keep the key private.
+2. Start PoliNews:
+
+   ```bash
+   bash scripts/run_demo.sh
+   ```
+
+   The script uses the project's `.venv`. If it is missing, set up the Python
+   environment using the installation steps later in this README.
+3. Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+4. On **News Fact Checker**, paste a news story, choose its language and Apertus
+   model (8B or 70B), then select **Check this story**. Review highlighted claims
+   and open the linked archive evidence; apply a suggested correction to the draft
+   only when its cited evidence supports it.
+5. Scroll down to **Archive classification** to see the automatic APS run across
+   up to 300,000 affairs. The backend starts it when PoliNews launches and keeps
+   it running independently of the browser. The page shows completed cases,
+   current run-rate, and a finish-time estimate that updates during the run.
+
+To stop the local server, press **Ctrl+C** in the terminal where it is running.
+
 ## News fact checker
 
 The opening screen now accepts multi-sentence news (up to 40 sentences / 12,000
@@ -82,11 +106,22 @@ not measure arbitrary query interpretation or translation quality. See
 `evaluation/BENCHMARK.md`; reproduce with `python -m parliament.digital_benchmark run`.
 
 Start the prepared local collection with `bash scripts/run_demo.sh` and open
-http://127.0.0.1:8000. The new home page supports reporting scopes, candidate
-discovery, source inspection, human corrections, and Markdown evidence shortlists.
+http://127.0.0.1:8000. The home page puts the multi-sentence news fact-checker
+first, with inline claim highlighting, archive-backed suggested replacements,
+source citations, and a one-click apply-to-draft action. News runs can pin either
+`apertus-v1-5-8b` or `apertus-v1-5-70b`; each run keeps the chosen model. The
+archive-research workspace, source inspection, human corrections, custom topics,
+and Markdown evidence shortlists remain available.
 The original classification/evaluation dashboard remains at `/admin`.
 
 The default inference model is `apertus-v1-5-70b` (tool-call variant, not thinking).
+The UI also supports `apertus-v1-5-8b` for a faster/less costly option. The Archive
+Classification panel runs a representative 100-affair pilot or resumable APS/custom-topic jobs
+of up to 500,000 affairs, including the full currently indexed collection. It reports a 300,000-affair projection from a completed
+100-case run on this installation. This is a linear planning estimate, sensitive
+to cache hits, archive text availability, model latency, and retries—not a runtime
+guarantee or a measured full-corpus result. Full-corpus jobs queue records inside
+DuckDB and process in bounded pages; completed work remains saved if interrupted.
 The live news regression currently passes 14/14 expected scenario outcomes across
 the five supported languages, including cited political claims, a sourced correction,
 and unsupported political content. This is a small smoke set, not an independent
@@ -120,10 +155,11 @@ existing Python 3.14 virtual environment. Run commands from the repository root.
    python -m pip install -r requirements-embeddings.txt
    ```
 
-2. **Provide the Apertus (Keera) API key** with either method; keep it private:
+2. **Provide the Apertus (Keera) API key** in `.key` at the repository root
+   (beside `api.py`) and restrict its permissions:
 
    ```bash
-   export KEERA_API_KEY="your-team-key"   # or put the key in a file named .key
+   chmod 600 .key
    ```
 
 3. **Import the data** (once; reuses existing downloads and is safe to repeat):
@@ -307,7 +343,7 @@ allows one repair attempt. HTTP errors have bounded retries. The model version,
 prompt version, source hash, language, and definition version participate in the
 cache key. Definitions can be revised; old results remain as historical snapshots.
 
-Background jobs have explicit affair caps (maximum 10,000 per job), one inference
+Background jobs have explicit affair caps (maximum 500,000 per job), one inference
 at a time, progress, cancellation, errors, and resumption. Cancelling takes effect
 after the in-flight affair finishes. A changed definition requires a new job.
 Continue large scans by setting the next starting affair ID; a cap is not a dollar

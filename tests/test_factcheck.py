@@ -15,6 +15,13 @@ class FactCheckTests(unittest.TestCase):
         with patch.dict(os.environ, {}, clear=True):
             self.assertEqual(classifier.model_name(), 'apertus-v1-5-70b')
 
+    def test_fact_check_pins_selected_supported_model(self):
+        run = factcheck.create('A political claim.', model='apertus-v1-5-8b')
+        self.assertEqual(run['model'], 'apertus-v1-5-8b')
+        self.assertEqual(db.query('SELECT model FROM fact_checks WHERE id=?', [run['id']])[0]['model'], 'apertus-v1-5-8b')
+        with self.assertRaises(ValueError):
+            factcheck.create('A political claim.', model='apertus-v1-5-8b-thinking')
+
     def scope(self, scope='swiss_parliament'):
         return factcheck.Scope(scope=scope, explanation='Test scope', terms=['Verwaltung'], input_language='en', sentence_english='The administration should improve digital services.')
 
@@ -127,8 +134,28 @@ class FactCheckTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         run = response.json()
         self.assertEqual(len(run['sentences']), 2)
+        selected = client.post('/api/fact-checks', json={'text':'Pinned model test.', 'model':'apertus-v1-5-8b'})
+        self.assertEqual(selected.status_code, 200)
+        self.assertEqual(selected.json()['model'], 'apertus-v1-5-8b')
+        self.assertEqual(client.post('/api/fact-checks', json={'text':'Invalid model test.', 'model':'apertus-v1-5-8b-thinking'}).status_code, 422)
         self.assertEqual(client.post(f"/api/fact-checks/{run['id']}/sentences/3").status_code, 400)
         self.assertEqual(client.post('/api/fact-checks/unknown/sentences/0').status_code, 400)
+
+    def test_output_translation_is_cached_without_changing_claim_evidence(self):
+        run = factcheck.create('The administration should improve digital services.')
+        source = {'scope':'swiss_parliament','scope_explanation':'This concerns a Swiss parliamentary affair.',
+                  'notice':'Evidence is limited.','review_notice':None,'claims':[{'text':'The administration should improve digital services.',
+                  'verdict':'supported','explanation':'The cited record supports this.','correction':None,'evidence':[{'quote':'Original archive quote'}]}]}
+        db.execute('INSERT INTO fact_check_sentences (run_id,sentence_index,result) VALUES (?,?,?)', [run['id'],0,json.dumps(source)])
+        translation = factcheck.OutputTranslation(scope_explanation='Dies betrifft ein Schweizer Parlamentsgeschäft.', notice='Die Belege sind begrenzt.',
+            review_notice=None, claim_explanations=['Der zitierte Eintrag stützt dies.'], claim_corrections=[None])
+        with patch.object(classifier, 'call_json', return_value=(translation, {})) as call:
+            first = factcheck.translate_result(run['id'], 0, 'de')
+            second = factcheck.translate_result(run['id'], 0, 'de')
+        self.assertEqual(first, second)
+        self.assertEqual(first['claims'][0]['explanation'], 'Der zitierte Eintrag stützt dies.')
+        self.assertNotIn('evidence', first['claims'][0])
+        call.assert_called_once()
 
 
 

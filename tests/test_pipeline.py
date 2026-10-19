@@ -38,6 +38,27 @@ class PipelineTests(unittest.TestCase):
     def valid_decision(self):
         return classifier.Decision(status="relevant", labels=[classifier.Label(topic_id=self.topic, evidence=classifier.Evidence(unit_id="text:1:10:de", quote="Die öffentliche Verwaltung soll ihre digitalen Dienstleistungen verbessern."))], explanation="Digital public services.")
 
+    def test_run_topic_ranking_counts_distinct_completed_affairs(self):
+        def result(*topics, status="relevant"):
+            return json_text({"status": status, "labels": [{"topic_id": topic, "name": topic} for topic in topics]})
+
+        rows = [
+            ("run", 1, "de", "done", result("Health", "Education", "Health")),
+            ("run", 1, "fr", "done", result("Health")),
+            ("run", 2, "de", "done", result("Health")),
+            ("run", 3, "de", "failed", result("Education")),
+            ("other", 4, "de", "done", result("Education")),
+            ("run", 5, "de", "done", result("Education", status="insufficient_evidence")),
+            ("run", 6, "de", "done", result()),
+        ]
+        with db.connect() as connection:
+            connection.executemany("INSERT INTO job_items (job_id,affair_id,language,status,result) VALUES (?,?,?,?,?)", rows)
+        self.assertEqual(jobs.topic_distribution("run"), [
+            {"topic_id": "Health", "name": "Health", "count": 2},
+            {"topic_id": "Education", "name": "Education", "count": 1},
+        ])
+        self.assertEqual(jobs.topic_distribution("empty"), [])
+
     def mock_call(self, *args):
         return self.valid_decision(), {"calls": 1, "prompt_tokens": 10, "completion_tokens": 5}
 
@@ -108,7 +129,11 @@ class PipelineTests(unittest.TestCase):
         from fastapi.testclient import TestClient
         from api import app
         client = TestClient(app)
-        self.assertEqual(client.post("/api/jobs", json={"limit": 10001}).status_code, 422)
+        self.assertEqual(client.post("/api/jobs", json={"limit": 500001}).status_code, 422)
+        estimate = client.get("/api/jobs/estimate", params={"model":"apertus-v1-5-8b", "topic_id":self.topic})
+        self.assertEqual(estimate.status_code, 200)
+        self.assertEqual(estimate.json()["model"], "apertus-v1-5-8b")
+        self.assertEqual(estimate.json()["sample_size"], 0)
         self.assertEqual(client.get("/api/status").json()["affairs"], 1)
         self.assertEqual(client.get("/api/search", params={"q": "Verwaltung", "semantic": False}).status_code, 200)
         with patch.object(classifier, "call_json", side_effect=self.mock_call):
@@ -168,6 +193,14 @@ class PipelineTests(unittest.TestCase):
         with patch.object(jobs, "classify", return_value={"status": "relevant"}):
             resumed = jobs.run_job(job["id"])
         self.assertEqual(resumed["status"], "completed")
+        timing = db.query("SELECT started_at,finished_at,elapsed_seconds FROM jobs WHERE id=?", [job["id"]])[0]
+        self.assertIsNotNone(timing["started_at"])
+        self.assertIsNotNone(timing["finished_at"])
+        self.assertGreaterEqual(timing["elapsed_seconds"], 0)
+        timing = db.query("SELECT started_at,finished_at,elapsed_seconds FROM jobs WHERE id=?", [job["id"]])[0]
+        self.assertIsNotNone(timing["started_at"])
+        self.assertIsNotNone(timing["finished_at"])
+        self.assertGreaterEqual(timing["elapsed_seconds"], 0)
 
     def test_cancelled_job_does_not_start(self):
         job = jobs.create_job("classify", self.topic, 1, [{"affair_id": 1}])
@@ -175,6 +208,23 @@ class PipelineTests(unittest.TestCase):
         with patch.object(jobs, "classify") as inference:
             jobs.run_job(job["id"])
         inference.assert_not_called()
+
+    def test_full_corpus_job_uses_duckdb_population_and_pins_model(self):
+        job = jobs.create_job("classify", self.topic, 300000, model="apertus-v1-5-8b", full_corpus=True)
+        self.assertEqual(job["total"], 1)
+        self.assertEqual(job["config"]["model"], "apertus-v1-5-8b")
+        self.assertTrue(job["config"]["full_corpus"])
+        self.assertEqual(db.query("SELECT count(*) AS count FROM job_items WHERE job_id=?", [job["id"]])[0]["count"], 1)
+
+    def test_continuous_archive_run_is_created_once_and_persisted(self):
+        with patch.object(jobs, "topic_context", return_value=([], "aps-test-v1")):
+            first = jobs.ensure_continuous_classification()
+            second = jobs.ensure_continuous_classification()
+        self.assertEqual(first["id"], second["id"])
+        self.assertEqual(first["total"], 1)
+        self.assertEqual(first["topic_id"], "aps")
+        self.assertEqual(first["config"]["model"], "apertus-v1-5-8b")
+        self.assertTrue(first["config"]["continuous_archive"])
 
     def test_definition_change_prevents_job_resumption(self):
         job = jobs.create_job("classify", self.topic, 1, [{"affair_id": 1}])

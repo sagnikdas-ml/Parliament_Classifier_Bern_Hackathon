@@ -52,6 +52,15 @@ class ReferencedAssessment(BaseModel):
     claims: list[ReferencedClaim] = Field(min_length=1, max_length=8)
 
 
+class OutputTranslation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scope_explanation: str = Field(max_length=1200)
+    notice: str = Field(max_length=1200)
+    review_notice: str | None = Field(max_length=1200)
+    claim_explanations: list[str] = Field(max_length=8)
+    claim_corrections: list[str | None] = Field(max_length=8)
+
+
 def evidence_options(sources):
     options = {}
     for source in sources:
@@ -145,7 +154,7 @@ def split_sentences(text):
     return spans
 
 
-def create(text, language='en', topic_ids=None):
+def create(text, language='en', topic_ids=None, model=None):
     if language not in SUPPORTED_LANGUAGES:
         raise ValueError('Supported languages: en, de, fr, it, rm')
     sentences = split_sentences(text)
@@ -157,9 +166,10 @@ def create(text, language='en', topic_ids=None):
         if not topic_id.startswith('custom:'):
             raise ValueError('Only custom topics can be selected for news checks.')
     identifier = uuid.uuid4().hex
+    model = classifier.model_name(model)
     db.execute("INSERT INTO fact_checks (id,input,sentences,model,version,language,topic_ids) VALUES (?,?,?,?,?,?,?)",
-               [identifier, text, json_text(sentences), classifier.model_name(), VERSION, language, json_text(topic_ids)])
-    return {"id": identifier, "sentences": sentences, "language": language, "topic_ids": topic_ids}
+               [identifier, text, json_text(sentences), model, VERSION, language, json_text(topic_ids)])
+    return {"id": identifier, "sentences": sentences, "language": language, "topic_ids": topic_ids, "model": model}
 
 
 def passages(sentence, terms, candidates):
@@ -241,7 +251,7 @@ def enforce_anchored_parliament_scope(scope, scope_found):
     return scope
 
 
-def check(identifier, index, force_archive=False):
+def _check(identifier, index, force_archive=False):
     records = db.query("SELECT * FROM fact_checks WHERE id=?", [identifier])
     if not records:
         raise ValueError("Unknown fact check")
@@ -367,4 +377,45 @@ def check(identifier, index, force_archive=False):
     attach_topics(result, custom_topic_ids)
     review_notice(result)
     db.execute("INSERT OR REPLACE INTO fact_check_sentences (run_id,sentence_index,result) VALUES (?,?,?)", [identifier, index, json_text(result)])
+    return result
+
+
+def check(identifier, index, force_archive=False):
+    records = db.query("SELECT model FROM fact_checks WHERE id=?", [identifier])
+    if not records:
+        raise ValueError("Unknown fact check")
+    with classifier.model_context(records[0]["model"]):
+        return _check(identifier, index, force_archive)
+
+
+def translate_result(identifier, index, language):
+    if language not in SUPPORTED_LANGUAGES:
+        raise ValueError('Supported languages: en, de, fr, it, rm')
+    cached = db.query("SELECT result FROM fact_check_translations WHERE run_id=? AND sentence_index=? AND language=?", [identifier, index, language])
+    if cached:
+        return json.loads(cached[0]['result'])
+    records = db.query("SELECT result FROM fact_check_sentences WHERE run_id=? AND sentence_index=?", [identifier, index])
+    if not records:
+        raise ValueError('Check this sentence before requesting its translation.')
+    source = json.loads(records[0]['result'])
+    explanations = [claim.get('explanation', '') for claim in source.get('claims', [])]
+    corrections = [claim.get('correction') for claim in source.get('claims', [])]
+    with classifier.model_context(db.query("SELECT model FROM fact_checks WHERE id=?", [identifier])[0]['model']):
+        translated, _ = classifier.call_json(
+            "Translate the editorial explanation fields faithfully into the requested language. Preserve all dates, names, numbers, attribution, uncertainty and meaning. "
+            "Do not translate or change source quotations, claim text, verdicts, URLs, titles or topic labels. Keep null correction fields null. "
+            "Return arrays in exactly the same order and length as the input arrays.",
+            {"language": SUPPORTED_LANGUAGES[language], "scope_explanation": source.get('scope_explanation', ''),
+             "notice": source.get('notice', ''), "review_notice": source.get('review_notice'),
+             "claim_explanations": explanations, "claim_corrections": corrections}, OutputTranslation,
+            example={"scope_explanation": "This sentence concerns a Swiss parliamentary affair.", "notice": "Archive evidence is limited.",
+                     "review_notice": None, "claim_explanations": ["The cited record supports this wording."], "claim_corrections": [None]})
+    if len(translated.claim_explanations) != len(explanations) or len(translated.claim_corrections) != len(corrections):
+        raise ValueError('The translated result did not match the sentence structure; retry the translation.')
+    result = {"language": language, "scope_explanation": translated.scope_explanation, "notice": translated.notice,
+              "review_notice": translated.review_notice,
+              "claims": [{"explanation": translated.claim_explanations[i], "correction": translated.claim_corrections[i]}
+                         for i in range(len(explanations))]}
+    db.execute("INSERT OR REPLACE INTO fact_check_translations (run_id,sentence_index,language,result) VALUES (?,?,?,?)",
+               [identifier, index, language, json.dumps(result, ensure_ascii=False)])
     return result

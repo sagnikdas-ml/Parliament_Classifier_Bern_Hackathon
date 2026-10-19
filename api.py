@@ -4,6 +4,7 @@ import json
 import os
 import secrets
 from datetime import date
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
@@ -72,6 +73,11 @@ def home():
     return FileResponse(ROOT / "web" / "public" / "index.html")
 
 
+@app.get("/about")
+def about():
+    return FileResponse(ROOT / "web" / "public" / "about.html")
+
+
 @app.get("/admin")
 def admin():
     return FileResponse(ROOT / "dashboard.html")
@@ -85,6 +91,7 @@ def chat_ui():
 class ClassificationRequest(BaseModel):
     topic_id: str = "aps"
     language: str | None = Field(default=None, pattern="^(de|fr|it|rm)$")
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
 
 
 class TopicRequest(BaseModel):
@@ -99,7 +106,10 @@ class DraftRequest(BaseModel):
 
 class JobRequest(BaseModel):
     topic_id: str = "aps"
-    limit: int = Field(default=20, ge=1, le=10000)
+    limit: int = Field(default=20, ge=1, le=500000)
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
+    calibration: bool = False
+    full_corpus: bool = False
     affair_ids: list[int] | None = Field(default=None, max_length=10000)
     body: str | None = None
     after_id: int | None = Field(default=None, ge=0)
@@ -108,6 +118,7 @@ class JobRequest(BaseModel):
 class ReviewRequest(BaseModel):
     topic_id: str = "aps"
     language: str = Field(pattern="^(de|fr|it|rm|und)$")
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
     labels: list[str]
     relevant: bool
     frozen: bool = False
@@ -154,25 +165,27 @@ def digitalisation_benchmark():
 
 
 @app.get("/api/affairs/{affair_id}")
-def affair(affair_id: int):
+def affair(affair_id: int, model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"):
     record = ensure_affair(affair_id)
     record["titles"] = json.loads(record["titles"])
     record["units"] = db.query("SELECT * FROM units WHERE affair_id=?", [affair_id])
     record["classifications"] = [json.loads(item["result"]) for item in db.query("SELECT result FROM classifications WHERE affair_id=? ORDER BY created_at DESC", [affair_id])]
-    for prediction in record["classifications"]:
-        prediction["current"] = classifier.result_is_current(prediction)
+    with classifier.model_context(model):
+        for prediction in record["classifications"]:
+            prediction["current"] = classifier.result_is_current(prediction)
     record["reviews"] = db.query("SELECT * EXCLUDE(prediction) FROM reviews WHERE affair_id=?", [affair_id])
     return record
 
 
 @app.post("/api/affairs/{affair_id}/classify")
 def classify(affair_id: int, request: ClassificationRequest):
-    return classifier.classify(affair_id, request.topic_id, request.language)
+    return classifier.classify(affair_id, request.topic_id, request.language, model=request.model)
 
 
 @app.post("/api/affairs/{affair_id}/review")
 def review(affair_id: int, request: ReviewRequest):
-    return classifier.review(affair_id, **request.model_dump())
+    with classifier.model_context(request.model):
+        return classifier.review(affair_id, **request.model_dump(exclude={"model"}))
 
 
 @app.get("/api/search")
@@ -209,6 +222,7 @@ class ResearchSearchRequest(BaseModel):
     language: str | None = Field(default=None, pattern="^(de|fr|it|rm)$")
     live: bool = True
     semantic: bool = True
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
 
 
 class ResearchAnalyseRequest(BaseModel):
@@ -217,6 +231,7 @@ class ResearchAnalyseRequest(BaseModel):
     date_from: date
     date_to: date
     language: str | None = Field(default=None, pattern="^(de|fr|it|rm)$")
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
 
 
 @app.post("/api/research/search")
@@ -224,13 +239,15 @@ def research_search(request: ResearchSearchRequest):
     from parliament.query_workflow import find
     if request.date_from and request.date_to and request.date_from > request.date_to:
         raise ValueError("The start date must not be after the end date.")
-    return find(request.question, request.date_from, request.date_to, request.body, request.language, request.live, request.semantic)
+    with classifier.model_context(request.model):
+        return find(request.question, request.date_from, request.date_to, request.body, request.language, request.live, request.semantic)
 
 
 @app.post("/api/research/analyse")
 def research_analyse(request: ResearchAnalyseRequest):
     from parliament.query_workflow import analyse
-    return analyse(request.affair_id, request.topic_id, request.date_from, request.date_to, request.language)
+    with classifier.model_context(request.model):
+        return analyse(request.affair_id, request.topic_id, request.date_from, request.date_to, request.language)
 
 
 @app.post("/api/brief")
@@ -246,7 +263,7 @@ def bodies():
 
 
 @app.get("/api/classifications")
-def classifications(topic_id: str = "aps", label_id: str | None = None, limit: int = Query(default=50, ge=1, le=200), after_id: int = Query(default=0, ge=0)):
+def classifications(topic_id: str = "aps", label_id: str | None = None, limit: int = Query(default=50, ge=1, le=200), after_id: int = Query(default=0, ge=0), model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"):
     version = classifier.topic_context(topic_id)[1]
     from parliament.config import PROMPT_VERSION
     records = db.query("""SELECT result FROM classifications c
@@ -254,19 +271,28 @@ def classifications(topic_id: str = "aps", label_id: str | None = None, limit: i
         AND (? IS NULL OR EXISTS (SELECT 1 FROM json_each(c.result, '$.labels') label
           WHERE json_extract_string(label.value,'$.topic_id')=?))
         QUALIFY row_number() OVER (PARTITION BY affair_id,language ORDER BY created_at DESC)=1
-        ORDER BY affair_id,language LIMIT ?""", [topic_id, version, classifier.model_name(), PROMPT_VERSION, after_id, label_id, label_id, limit])
+        ORDER BY affair_id,language LIMIT ?""", [topic_id, version, model, PROMPT_VERSION, after_id, label_id, label_id, limit])
     results = [json.loads(item["result"]) for item in records]
     if len(results) == limit and results[0]["affair_id"] != results[-1]["affair_id"]:
         # The cursor is an affair id, so never split one affair's languages across pages.
         results = [item for item in results if item["affair_id"] != results[-1]["affair_id"]]
-    return {"results": [item for item in results if classifier.result_is_current(item)],
+    with classifier.model_context(model):
+        current_results = [item for item in results if item.get("model") == model and classifier.result_is_current(item)]
+    return {"results": current_results,
             "next_after_id": max((item["affair_id"] for item in results), default=None),
             "note": "Current saved predictions only; human corrections remain separate review records."}
 
 
 @app.get("/api/jobs")
 def list_jobs():
-    return [jobs.get_job(item["id"]) for item in db.query("SELECT id FROM jobs ORDER BY created_at DESC LIMIT 20")]
+    jobs.ensure_continuous_classification()
+    candidates = db.query("SELECT id FROM jobs WHERE status IN ('queued','running','paused','cancelled','completed_with_errors') ORDER BY created_at DESC LIMIT 20")
+    records = [jobs.get_job(item["id"]) for item in candidates]
+    available = [item for item in records if item["status"] in ("queued", "running") or item["resumable"]][:5]
+    if available:
+        return available
+    completed = db.query("SELECT id FROM jobs WHERE status='completed' ORDER BY created_at DESC LIMIT 1")
+    return [jobs.get_job(completed[0]["id"])] if completed else []
 
 
 @app.post("/api/jobs")
@@ -274,12 +300,42 @@ def create_job(request: JobRequest):
     items = [{"affair_id": identifier} for identifier in request.affair_ids] if request.affair_ids is not None else None
     if request.after_id is not None and items is None:
         items = db.query("SELECT id AS affair_id FROM affairs WHERE id>? AND (? IS NULL OR body_key=?) ORDER BY id LIMIT ?", [request.after_id, request.body, request.body, request.limit])
-    return jobs.create_job("classify", request.topic_id, request.limit, items, request.body)
+    selected = classifier.model_name(request.model)
+    result = jobs.create_job("classify", request.topic_id, request.limit, items, request.body, selected, request.full_corpus)
+    if request.calibration:
+        config = result["config"] | {"calibration": True}
+        db.execute("UPDATE jobs SET config=? WHERE id=?", [json.dumps(config), result["id"]])
+        result = jobs.get_job(result["id"])
+    return result
+
+
+@app.get("/api/jobs/estimate")
+def job_estimate(model: str = Query(default="apertus-v1-5-70b"), topic_id: str = "aps"):
+    selected = classifier.model_name(model)
+    classifier.topic_context(topic_id)
+    runs = db.query("SELECT id,total,status,config,topic_id FROM jobs WHERE kind='classify' ORDER BY created_at DESC LIMIT 100")
+    for run in runs:
+        config = json.loads(run["config"])
+        if config.get("calibration") and config.get("model") == selected and run["topic_id"] == topic_id and run["total"] == 100 and run["status"] in ("completed", "completed_with_errors"):
+            counts = {row["status"]: row["count"] for row in db.query("SELECT status,count(*) AS count FROM job_items WHERE job_id=? GROUP BY status", [run["id"]])}
+            elapsed = db.query("SELECT elapsed_seconds AS seconds FROM jobs WHERE id=?", [run["id"]])[0]["seconds"]
+            return {"model": selected, "sample_size": 100, "elapsed_seconds": elapsed, "seconds_per_case": elapsed / 100 if elapsed else None,
+                    "estimated_300k_seconds": elapsed * 3000 if elapsed else None, "completed": counts.get("done", 0), "failed": counts.get("failed", 0), "job_id": run["id"]}
+    return {"model": selected, "sample_size": 0, "notice": "Run the 100-affair pilot to measure this model against your local archive."}
 
 
 @app.get("/api/jobs/{identifier}")
 def job(identifier: str):
-    return jobs.get_job(identifier)
+    record = jobs.get_job(identifier)
+    record["topic_distribution"] = jobs.topic_distribution(identifier) if record["kind"] == "classify" else []
+    if record.get("started_at"):
+        timing = db.query("SELECT coalesce(elapsed_seconds,0)+CASE WHEN status='running' THEN date_diff('second',started_at,current_timestamp) ELSE 0 END AS seconds FROM jobs WHERE id=?", [identifier])[0]
+        record["elapsed_seconds"] = timing["seconds"]
+        done = sum(item["count"] for item in record["progress"] if item["status"] == "done")
+        record["live_estimated_total_seconds"] = timing["seconds"] / done * record["total"] if done else None
+        record["live_estimated_remaining_seconds"] = max(0, record["live_estimated_total_seconds"] - timing["seconds"]) if record["live_estimated_total_seconds"] is not None else None
+        record["live_cases_per_minute"] = done * 60 / timing["seconds"] if timing["seconds"] > 0 else None
+    return record
 
 
 @app.post("/api/jobs/{identifier}/{action}")
@@ -317,15 +373,23 @@ class FactCheckRequest(BaseModel):
     text: str = Field(min_length=1, max_length=12000)
     language: str = Field(default="en", pattern="^(en|de|fr|it|rm)$")
     topic_ids: list[str] = Field(default_factory=list, max_length=3)
+    model: Literal["apertus-v1-5-8b", "apertus-v1-5-70b"] = "apertus-v1-5-70b"
 
 
 @app.post("/api/fact-checks")
 def create_fact_check(request: FactCheckRequest):
     from parliament.factcheck import create
-    return create(request.text, request.language, request.topic_ids)
+    classifier.model_name(request.model)
+    return create(request.text, request.language, request.topic_ids, request.model)
 
 
 @app.post("/api/fact-checks/{identifier}/sentences/{index}")
 def check_news_sentence(identifier: str, index: int, force_archive: bool = False):
     from parliament.factcheck import check
     return check(identifier, index, force_archive)
+
+
+@app.post("/api/fact-checks/{identifier}/sentences/{index}/translations/{language}")
+def translate_news_sentence(identifier: str, index: int, language: Literal["en", "de", "fr", "it", "rm"]):
+    from parliament.factcheck import translate_result
+    return translate_result(identifier, index, language)

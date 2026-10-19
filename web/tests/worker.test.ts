@@ -3,14 +3,20 @@ import assert from "node:assert/strict";
 import worker, { allowed } from "../src/worker.ts";
 
 const env = () => ({ASSETS: {fetch: async () => new Response("static")}, BACKEND_URL: "http://127.0.0.1:8000", LOCAL_DEMO: "true", API_LIMITER: {limit: async () => ({success: true})}} as unknown as Parameters<typeof worker.fetch>[1]);
-test("gateway route allowlist excludes jobs, arbitrary URLs and chat", () => {
+test("gateway route allowlist exposes bounded jobs but excludes arbitrary URLs and chat", () => {
   assert.ok(allowed("POST", "/api/affairs/12/classify"));
   assert.ok(allowed("POST", "/api/research/search"));
   assert.ok(allowed("POST", "/api/research/analyse"));
   assert.ok(allowed("POST", "/api/fact-checks"));
   assert.ok(allowed("POST", "/api/fact-checks/" + "a".repeat(32) + "/sentences/0"));
+  assert.ok(allowed("POST", "/api/fact-checks/" + "a".repeat(32) + "/sentences/0/translations/de"));
+  assert.equal(allowed("POST", "/api/fact-checks/" + "a".repeat(32) + "/sentences/0/translations/es"), false);
+  assert.ok(allowed("POST", "/api/jobs"));
+  assert.ok(allowed("GET", "/api/jobs/" + "a".repeat(16)));
+  assert.ok(allowed("GET", "/api/jobs/estimate"));
+  assert.ok(allowed("POST", "/api/jobs/" + "a".repeat(16) + "/cancel"));
   assert.equal(allowed("GET", "/api/fact-checks"), false);
-  for (const path of ["/api/jobs", "/chat", "/api/proxy", "/api/affairs/12/delete", "/api/affairs/https://evil"]) assert.equal(allowed("POST", path), false);
+  for (const path of ["/api/jobs/garbage/cancel", "/chat", "/api/proxy", "/api/affairs/12/delete", "/api/affairs/https://evil"]) assert.equal(allowed("POST", path), false);
 });
 test("remote requests fail closed even with a spoofed JWT", async () => {
   const response = await worker.fetch(new Request("https://desk.example/api/status", {headers:{"cf-access-jwt-assertion":"fake"}}), env());

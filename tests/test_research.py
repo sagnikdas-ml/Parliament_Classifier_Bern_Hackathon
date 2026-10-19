@@ -150,9 +150,22 @@ class ResearchTests(unittest.TestCase):
         response = client.post("/api/brief", json={"affair_ids":[1], "topic_id":self.topic})
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/markdown", response.headers["content-type"])
+        with patch.object(query_workflow, "find", side_effect=lambda *args, **kwargs: classifier.model_name()):
+            selected_model = client.post("/api/research/search", json={"question":"Find public administration policy", "model":"apertus-v1-5-8b"})
+        self.assertEqual(selected_model.json(), "apertus-v1-5-8b")
+        self.assertEqual(client.post("/api/research/search", json={"question":"Find public administration policy", "model":"apertus-v1-5-8b-thinking"}).status_code, 422)
         with patch.object(classifier, "call_json", side_effect=self.mock_call):
             classifier.classify(1, self.topic, "de", fetch=False)
         self.assertTrue(client.get("/api/affairs/1").json()["classifications"][0]["current"])
+        with patch.object(classifier, "call_json", side_effect=self.mock_call):
+            result = classifier.classify(1, self.topic, "de", fetch=False, model="apertus-v1-5-8b")
+        self.assertEqual(result["model"], "apertus-v1-5-8b")
+        self.assertTrue(client.get("/api/affairs/1", params={"model":"apertus-v1-5-8b"}).json()["classifications"][0]["current"])
+        self.assertEqual(client.get("/api/classifications", params={"topic_id":self.topic, "model":"apertus-v1-5-8b"}).json()["results"][0]["model"], "apertus-v1-5-8b")
+        with patch.object(classifier, "classify", return_value={"model":"apertus-v1-5-8b"}) as classify_model:
+            result = client.post("/api/affairs/1/classify", json={"topic_id":self.topic, "language":"de", "model":"apertus-v1-5-8b"})
+        self.assertEqual(result.json()["model"], "apertus-v1-5-8b")
+        classify_model.assert_called_once_with(1, self.topic, "de", model="apertus-v1-5-8b")
 
     def test_fixed_scope_cannot_be_edited_through_api(self):
         from parliament.digitalisation import TOPIC_ID, ensure_topic

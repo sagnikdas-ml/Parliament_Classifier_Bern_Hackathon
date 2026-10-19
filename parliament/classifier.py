@@ -1,5 +1,6 @@
 import json
 import os
+import contextvars
 import threading
 import time
 import uuid
@@ -78,11 +79,27 @@ class TopicDraft(BaseModel):
     keywords_it: list[str]
 
 
-def model_name():
-    return os.environ.get("APERTUS_MODEL", "apertus-v1-5-70b")
+AVAILABLE_MODELS = ("apertus-v1-5-8b", "apertus-v1-5-70b")
+SELECTED_MODEL = contextvars.ContextVar("polinews_model", default=None)
 
 
-def call_json(system, payload, schema, example=None):
+def model_name(selected=None):
+    model = selected or SELECTED_MODEL.get() or os.environ.get("APERTUS_MODEL", "apertus-v1-5-70b")
+    if model not in AVAILABLE_MODELS:
+        raise ValueError("Choose apertus-v1-5-8b or apertus-v1-5-70b")
+    return model
+
+
+@contextmanager
+def model_context(selected):
+    token = SELECTED_MODEL.set(model_name(selected))
+    try:
+        yield
+    finally:
+        SELECTED_MODEL.reset(token)
+
+
+def call_json(system, payload, schema, example=None, model=None):
     key = os.environ.get("KEERA_API_KEY", "").strip()
     key_file = ROOT / ".key"
     if not key and key_file.exists():
@@ -105,7 +122,7 @@ def call_json(system, payload, schema, example=None):
         output_schema["$defs"]["Evidence"]["properties"]["unit_id"]["enum"] = [item["unit_id"] for item in payload["sources"]]
     with INFERENCE_LOCK, inference_slot(), OpenAI(api_key=key, base_url=os.environ.get("APERTUS_BASE_URL", "https://gateway.keera.ch/api/v1"), timeout=90, max_retries=2) as client:
         for attempt in range(2):
-            response = client.chat.completions.create(model=model_name(), messages=messages, temperature=0, max_tokens=1800, response_format={"type": "json_schema", "json_schema": {"name": schema.__name__, "strict": True, "schema": output_schema}})
+            response = client.chat.completions.create(model=model_name(model), messages=messages, temperature=0, max_tokens=1800, response_format={"type": "json_schema", "json_schema": {"name": schema.__name__, "strict": True, "schema": output_schema}})
             usage["calls"] += 1
             if response.usage:
                 usage["prompt_tokens"] += response.usage.prompt_tokens or 0
@@ -212,11 +229,12 @@ def validate_decision(decision, chunk, allowed):
     return decision
 
 
-def classify(affair_id, topic_id="aps", language=None, fetch=True, force=False):
+def _classify(affair_id, topic_id="aps", language=None, fetch=True, force=False, model=None):
+    model = model_name(model)
     catalogue, version = topic_context(topic_id)
     units, language = source_units(affair_id, language, fetch)
     content_hash = digest([(item["id"], item["content_hash"]) for item in units])
-    cache_key = digest([affair_id, topic_id, version, language, content_hash, model_name(), PROMPT_VERSION])
+    cache_key = digest([affair_id, topic_id, version, language, content_hash, model, PROMPT_VERSION])
     cached = db.query("SELECT result FROM classifications WHERE cache_key=?", [cache_key])
     if cached and not force:
         return {**json.loads(cached[0]["result"]), "cached": True}
@@ -265,10 +283,15 @@ def classify(affair_id, topic_id="aps", language=None, fetch=True, force=False):
               "explanations": [item["explanation"] for item in decisions], "validation_errors": errors,
               "partial_content": truncated, "has_substantive_text": substantive,
               "usage": usage, "elapsed_seconds": round(time.monotonic() - started, 3),
-              "model": model_name(), "prompt_version": PROMPT_VERSION, "content_hash": content_hash,
+              "model": model, "prompt_version": PROMPT_VERSION, "content_hash": content_hash,
               "cached": False}
-    db.execute("INSERT OR REPLACE INTO classifications (cache_key,affair_id,topic_id,topic_version,language,content_hash,model,prompt_version,result) VALUES (?,?,?,?,?,?,?,?,?)", [cache_key, affair_id, topic_id, version, language, content_hash, model_name(), PROMPT_VERSION, json_text(result)])
+    db.execute("INSERT OR REPLACE INTO classifications (cache_key,affair_id,topic_id,topic_version,language,content_hash,model,prompt_version,result) VALUES (?,?,?,?,?,?,?,?,?)", [cache_key, affair_id, topic_id, version, language, content_hash, model, PROMPT_VERSION, json_text(result)])
     return result
+
+
+def classify(affair_id, topic_id="aps", language=None, fetch=True, force=False, model=None):
+    with model_context(model):
+        return _classify(affair_id, topic_id, language, fetch, force, model_name())
 
 
 def review(affair_id, topic_id, language, labels, relevant, frozen, notes):
@@ -280,7 +303,7 @@ def review(affair_id, topic_id, language, labels, relevant, frozen, notes):
     existing = db.query("SELECT frozen FROM reviews WHERE affair_id=? AND topic_id=? AND language=?", [affair_id, topic_id, language])
     if existing and existing[0]["frozen"]:
         raise ValueError("This evaluation label is frozen and cannot be edited")
-    predictions = db.query("SELECT result FROM classifications WHERE affair_id=? AND topic_id=? AND language=? ORDER BY created_at DESC LIMIT 1", [affair_id, topic_id, language])
+    predictions = db.query("SELECT result FROM classifications WHERE affair_id=? AND topic_id=? AND language=? AND model=? ORDER BY created_at DESC LIMIT 1", [affair_id, topic_id, language, model_name()])
     if not predictions:
         raise ValueError("Classify this affair and language before reviewing it")
     if not result_is_current(json.loads(predictions[0]["result"])):

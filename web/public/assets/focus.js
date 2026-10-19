@@ -31,6 +31,7 @@ function statusLabel(record) {
 function controls() {
   byId("search").disabled = state.busy;
   byId("query").disabled = state.busy;
+  byId("researchModel").disabled = state.busy;
   byId("from").disabled = state.busy;
   byId("to").disabled = state.busy;
   byId("stop").disabled = !state.busy || state.stopped;
@@ -66,7 +67,7 @@ function render() {
 async function analyseRecord(record) {
   record.processing = true; record.error = null; render();
   try {
-    const result = await api("/api/research/analyse", {affair_id: record.id, topic_id: state.plan.topic_id, date_from: state.plan.date_from, date_to: state.plan.date_to, language: state.plan.language});
+    const result = await api("/api/research/analyse", {affair_id: record.id, topic_id: state.plan.topic_id, date_from: state.plan.date_from, date_to: state.plan.date_to, language: state.plan.language, model:state.plan.model});
     Object.assign(record, result);
   } catch (error) { record.error = error.message; }
   finally { record.processing = false; render(); }
@@ -78,8 +79,8 @@ byId("searchForm").onsubmit = async (event) => {
   let syncWarning = "";
   try {
     notice("Interpreting your question and retrieving candidates…");
-    const response = await api("/api/research/search", {question: byId("query").value.trim(), date_from: byId("from").value || null, date_to: byId("to").value || null});
-    state.results = response.results; state.plan = response.plan; state.page = 0; state.selected.clear();
+    const response = await api("/api/research/search", {question: byId("query").value.trim(), date_from: byId("from").value || null, date_to: byId("to").value || null, model:byId("researchModel").value});
+    state.results = response.results; state.plan = {...response.plan, model:byId("researchModel").value}; state.page = 0; state.selected.clear();
     syncWarning = response.sync.warnings.length ? " Live retrieval incomplete; cached data included." : " Bounded live search + local catalogue.";
     byId("interpretation").textContent = response.plan.name + " · " + response.plan.date_from + " — " + response.plan.date_to + (response.plan.body ? " · " + response.plan.body : "");
     byId("interpretation").title = response.plan.definition;
@@ -116,7 +117,7 @@ byId("results").onclick = async (event) => {
   }
 };
 async function inspect(record) {
-  const detail = await api("/api/affairs/" + record.id);
+  const detail = await api("/api/affairs/" + record.id + "?model=" + encodeURIComponent(state.plan.model));
   const prediction = record.classification;
   const translated = record.translation;
   const passages = translated?.passages || prediction?.labels.map((label) => ({original: label.evidence.quote, source_url: label.evidence.source_url})) || [];
@@ -136,7 +137,7 @@ async function inspect(record) {
       button.disabled = true;
       try {
         const relevant = button.dataset.review === "yes";
-        await api("/api/affairs/" + record.id + "/review", {topic_id: state.plan.topic_id, language: prediction.language, labels: relevant ? [state.plan.topic_id] : [], relevant, frozen: false, notes: "Assisted review of a natural-language research query"});
+        await api("/api/affairs/" + record.id + "/review", {topic_id: state.plan.topic_id, language: prediction.language, model:state.plan.model, labels: relevant ? [state.plan.topic_id] : [], relevant, frozen: false, notes: "Assisted review of a natural-language research query"});
         record.review = relevant; render(); notice("Review saved."); byId("detail").close();
       } catch (error) { notice(error.message, true); } finally { button.disabled = false; }
     };

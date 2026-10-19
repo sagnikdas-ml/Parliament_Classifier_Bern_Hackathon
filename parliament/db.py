@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS fact_check_sentences (
  run_id VARCHAR, sentence_index INTEGER, result VARCHAR,
  checked_at TIMESTAMP DEFAULT current_timestamp, PRIMARY KEY(run_id,sentence_index)
 );
+CREATE TABLE IF NOT EXISTS fact_check_translations (
+ run_id VARCHAR, sentence_index INTEGER, language VARCHAR, result VARCHAR,
+ translated_at TIMESTAMP DEFAULT current_timestamp,
+ PRIMARY KEY(run_id,sentence_index,language)
+);
 CREATE TABLE IF NOT EXISTS affairs (
  id BIGINT PRIMARY KEY, body_key VARCHAR, begin_date VARCHAR,
  titles VARCHAR, source_url VARCHAR, source_hash VARCHAR, raw VARCHAR,
@@ -59,11 +64,12 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 CREATE TABLE IF NOT EXISTS jobs (
  id VARCHAR PRIMARY KEY, kind VARCHAR, topic_id VARCHAR, status VARCHAR,
- config VARCHAR, total INTEGER, created_at TIMESTAMP DEFAULT current_timestamp
+ config VARCHAR, total INTEGER, created_at TIMESTAMP DEFAULT current_timestamp,
+ started_at TIMESTAMP, finished_at TIMESTAMP, elapsed_seconds BIGINT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS job_items (
  job_id VARCHAR, affair_id BIGINT, language VARCHAR, status VARCHAR,
- error VARCHAR, result VARCHAR,
+ error VARCHAR, result VARCHAR, attempts INTEGER DEFAULT 0,
  PRIMARY KEY (job_id, affair_id, language)
 );
 """
@@ -82,6 +88,10 @@ def connect():
             connection.execute("ALTER TABLE reviews ADD COLUMN IF NOT EXISTS prediction VARCHAR")
             connection.execute("ALTER TABLE fact_checks ADD COLUMN IF NOT EXISTS language VARCHAR DEFAULT 'en'")
             connection.execute("ALTER TABLE fact_checks ADD COLUMN IF NOT EXISTS topic_ids VARCHAR DEFAULT '[]'")
+            connection.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMP")
+            connection.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS finished_at TIMESTAMP")
+            connection.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS elapsed_seconds BIGINT DEFAULT 0")
+            connection.execute("ALTER TABLE job_items ADD COLUMN IF NOT EXISTS attempts INTEGER DEFAULT 0")
             yield connection
         finally:
             connection.close()
