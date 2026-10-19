@@ -1,4 +1,6 @@
-# VectorZero
+# ParlaRadar
+
+Built by team VectorZero.
 
 ## User story
 
@@ -40,8 +42,10 @@ generator, topic-management workflow, or model catalogue in the primary interfac
   out-of-range records despite its documented date parameters.
 - Missing source texts/documents are fetched for classification. Already fetched
   content is cached, not continuously refreshed.
-- No scheduler runs automatically. Stop halts subsequent browser requests after the
-  current affair finishes; a submitted backend call may finish and populate its cache.
+- There is no scheduled OpenParlData sync. Separately, backend startup runs the
+  resumable APS archive classifier and LLM judge; stop in the research view halts
+  subsequent browser requests after the current affair finishes, while an active
+  backend request may still finish and populate its cache.
 - Per-affair requests avoid one long ten-affair HTTP request through the Worker.
 - English translations are cached by original text, evidence, model and version.
   Originals remain authoritative; translations are never used to validate quotations.

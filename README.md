@@ -95,7 +95,7 @@ One local FastAPI process (`127.0.0.1:8000`) serves both UIs and the API. When t
 
 ## Evaluation and limits
 
-The displayed archive quality score measures agreement with a second Apertus 70B judge; it is not human-verified accuracy. The live news regression set is small and curated, not an independent benchmark. Retrieval is bounded: missing evidence means *unverified*, not *false*. Review the original source before publication. See [VALIDATION.md](VALIDATION.md) and [evaluation/BENCHMARK.md](evaluation/BENCHMARK.md).
+The displayed archive quality score measures agreement with a second Apertus 70B judge; it is not human-verified accuracy. The live news regression set is small and curated, not an independent benchmark. Retrieval is bounded: missing evidence means *unverified*, not *false*. Review the original source before publication. See [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md) and [evaluation/BENCHMARK.md](evaluation/BENCHMARK.md).
 
 Run automated checks with:
 

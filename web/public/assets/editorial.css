@@ -1,4 +1,4 @@
-/* VectorZero editorial theme: sky, ink, and a generous writing surface. */
+/* ParlaRadar editorial theme: sky, ink, and a generous writing surface. */
 :root{--ink:#14243b;--muted:#63738a;--line:#d6e3ed;--accent:#4f46e5;--accent-dark:#3730a3;--paper:#f0f7fb;--mint:#eef0ff}
 body{background:var(--paper);color:var(--ink)}
 header{max-width:none;flex-basis:88px;padding:16px max(24px,calc((100vw - 1240px)/2));gap:22px;background:#f8fcffed;border-bottom:1px solid #cddfea;box-shadow:none}

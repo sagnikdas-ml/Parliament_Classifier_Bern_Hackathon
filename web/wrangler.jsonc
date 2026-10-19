@@ -1,5 +1,5 @@
 {
-  "name": "vectorzero",
+  "name": "parlaradar",
   "main": "src/worker.ts",
   "compatibility_date": "2026-10-01",
   "workers_dev": false,

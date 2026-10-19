@@ -309,7 +309,7 @@ inference at a time (file lock) so the gateway is not flooded.
 
 | Data | Source | Use | Licence / status |
 |:--|:--|:--|:--|
-| Affairs, bodies, texts (≈326k imported affairs per `VALIDATION.md`) | OpenParlData exports and REST API (files.openparldata.ch, api.openparldata.ch) | Archive and retrieval | Parliamentary records published via OpenParlData.ch. The challenge README gives attribution (Parliamentary Services of the Federal Assembly via OpenParlData.ch) but **no explicit licence text** in the copy we have; confirm before redistributing. |
+| Affairs, bodies, texts (≈326k in the tested local archive) | OpenParlData exports and REST API (files.openparldata.ch, api.openparldata.ch) | Archive and retrieval | Parliamentary records published via OpenParlData.ch. The challenge README gives attribution (Parliamentary Services of the Federal Assembly via OpenParlData.ch) but **no explicit licence text** in the copy we have; confirm before redistributing. |
 | Curia Vista subject areas, cantonal classifications | Challenge datasets | Source labels stored separately; never treated as APS ground truth | as above |
 | APS scheme (8 domains, 22 chapters, 165 topics, DE/FR) | anneepolitique.swiss (`aps_topics.xlsx`) | Target taxonomy | Not stated in the supplied files; keep attribution. |
 | PolitMonitor "Digitalisierung" tags (3,433 affairs) | glue / PolitMonitor editorial team via the challenge | Benchmark positives | Editorial labels; positives only, incomplete. |
@@ -318,7 +318,7 @@ inference at a time (file lock) so the gateway is not flooded.
 
 **Not in the repository:** `data/` (archive, embeddings, caches, results of live
 runs), `.key`, `.env`, model weights and large outputs are git-ignored. Only small
-frozen result files in `evaluation/` and one sample story in `samples/` are committed.
+frozen result files in `evaluation/` are committed; demo inputs are in `examples.md`.
 
 **Personal information.** Affair records name the elected officials who authored
 or co-signed an item, with party and role. This is the public record of their
@@ -335,7 +335,7 @@ and are not part of the repository.
 
 - **The only quantitative benchmark is unfavourable.** On the 42 known positives the 8B model recovered 47.6 %, below the 52.4 % of a title-keyword baseline (DVS subset 43.3 % vs 60.0 %; German 44.0 % vs 56.0 %; French 45.5 % vs 54.5 %; Italian 66.7 % vs 33.3 %). 22 of 42 affairs ended in abstention, 10 had no substantive text, 20 had at least one rejected quote.
 - **That benchmark pre-dates the current prompt.** It ran with prompt `named-policy-evidence-v3`; the code is now at `v6` and defaults to the 70B model. The benchmark was **not re-run** after those changes, so the current system's recall on this set is unknown.
-- **No precision, F1 or accuracy.** The lists are positives only; unlabelled affairs are not negatives. No affair-level APS gold labels exist. A seven-affair, AI-assisted audit of the 8B APS classifier, documented in `VALIDATION.md`, found 0.00 micro precision and recall; the authors state the classifier "is not ready for unattended use" (`VALIDATION.md`). A verified quotation proves traceability, not that the label is right.
+- **No precision, F1 or accuracy.** The lists are positives only; unlabelled affairs are not negatives. No affair-level APS gold labels exist. A seven-affair, AI-assisted diagnostic sample (`evaluation/journalist-sample.json`) found 0.00 micro precision and recall for the older 8B predictions. It is too small and not independent gold, but warns against unattended classification. A verified quotation proves traceability, not that the label is right.
 - **No fairness or bias evaluation.** We did not test whether results differ across parties, cantons or languages; the classifier is not given authors or parties, which reduces but does not rule out such effects. No cross-lingual consistency measurement was made on parallel DE/FR/IT texts.
 - **Live news check: smoke test only.** 14 / 14 outcomes over 7 short stories, run against the live model but tiny and curated by the team. It is not evidence of accuracy, nor of equal quality across languages, and Romansh quality is unverified.
 - **The LLM judge is not ground truth.** It is a second Apertus 70B pass; same-family models can share mistakes. Cases the judge cannot assess (no text, truncated text, abstention) are excluded, which may flatter its scores.
@@ -408,4 +408,4 @@ Creative Commons Attribution 4.0 (CC-BY-4.0). All HackApertus projects are open-
 - Digital Public Services Switzerland, political affairs list: https://www.digitale-verwaltung-schweiz.ch/aktuelles/politische-geschaefte
 - Multilingual E5 small (embeddings) and Apertus (Swiss AI) provide the retrieval and classification models.
 - DuckDB: https://duckdb.org
-- In-repository evidence: `evaluation/BENCHMARK.md`, `evaluation/digitalisation-result.json`, `evaluation/news-live-regression.json`, `VALIDATION.md`, `PRODUCT.md`
+- In-repository evidence: `evaluation/BENCHMARK.md`, `evaluation/digitalisation-result.json`, `evaluation/news-live-regression.json`, `evaluation/journalist-sample.json`, `PRODUCT.md`, `examples.md`
