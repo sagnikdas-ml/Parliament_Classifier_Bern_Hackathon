@@ -5,6 +5,7 @@ import Backdrop from './components/Backdrop.jsx'
 import Dock from './components/Dock.jsx'
 import Constellation from './views/Constellation.jsx'
 import Scanner from './views/Scanner.jsx'
+import PoliBotProvider from './components/PoliBotProvider.jsx'
 import { Segmented } from './components/ui.jsx'
 
 const LANGUAGES = ['DE', 'FR', 'IT', 'RM', 'EN']
@@ -45,6 +46,7 @@ export default function App() {
   const backendReady = !!status
 
   return (
+    <PoliBotProvider view={view}>
     <div className="relative min-h-full">
       <Backdrop theme={theme} dim={view === 'scanner'} />
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-start justify-between bg-gradient-to-b from-bg from-60% via-bg/80 to-transparent px-8 pb-12 pt-6">
@@ -65,5 +67,6 @@ export default function App() {
       </main>
       <Dock view={view} setView={setView} theme={theme} setTheme={setTheme} />
     </div>
+    </PoliBotProvider>
   )
 }
