@@ -9,7 +9,7 @@ import { Segmented, verifyQuote } from '../components/ui.jsx'
 
 /** Dossier-style evidence: header lines, then the verbatim quote typed out gently, then a verification result. */
 function Evidence({ a }) {
-  const head = `record   ${a.number} · ${BODY_NAMES[a.body] || a.body} · ${a.date}\nsource   ${a.kind}${a.author ? ` · ${a.author}${a.party ? ` (${a.party})` : ''}` : ''}\nquote    `
+  const head = `record   ${BODY_NAMES[a.body] || a.body} · ${a.date}\nsource   ${a.kind}${a.author ? ` · ${a.author}${a.party ? ` (${a.party})` : ''}` : ''}\nquote    `
   const { shown, done } = useTypewriter(head + a.quote, { speed: 16 })
   const ok = verifyQuote(a.quote, a.source)
   return (
@@ -42,7 +42,6 @@ function NodeOverlay({ a, pinned, onPin }) {
     <motion.div initial={{ opacity: 0, scale: 0.98, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: 'easeOut' }}
       className="card absolute -inset-x-6 -top-5 z-40 p-7">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="meta font-medium text-accent">{a.number}</span>
         <span className="meta">{BODY_NAMES[a.body] || a.bodyName || a.body}</span>
         <span className="meta">{a.level} · {(a.langs?.length ? a.langs : [a.lang]).join(' / ')}</span>
         <span className="meta">{a.author || 'Author not listed'}{a.party ? ` · ${a.party}` : ''}</span>
@@ -102,7 +101,6 @@ function Node({ a, active, dim, setHover, pinned, setPinned }) {
       <div style={{ visibility: active ? 'hidden' : 'visible' }}>
         <div className="flex items-center gap-2.5">
           <span className="h-2 w-2 rounded-full bg-accent opacity-80" />
-          <span className="meta">{a.number}</span>
           <span className="meta opacity-70">{a.bodyName || a.body} · {a.date}</span>
         </div>
         <h3 className="mt-2 font-serif font-medium leading-[1.25] text-ink" style={{ fontSize: size }}>{a.title}</h3>

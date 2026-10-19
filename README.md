@@ -33,7 +33,63 @@ The launcher runs one Uvicorn worker without autoreload. Use it for the full arc
 
 ## Architecture
 
-OpenParlData exports/API → import and multilingual E5 retrieval → DuckDB → FastAPI → React UI. Apertus handles classification and claim review through an OpenAI-compatible endpoint. Resumable archive classification and blind LLM judging run in background threads. DuckDB stores the archive, embeddings, labels, jobs, and fact-check runs. See [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md) for the architecture diagram, evaluation, and deployment constraints.
+```mermaid
+flowchart LR
+  subgraph Sources[OpenParlData]
+    EXP[Exports<br/>affairs · bodies · APS · labels]
+    REST[REST API<br/>texts · documents · provenance]
+  end
+
+  subgraph Host[Local host · one Uvicorn worker]
+    subgraph UI[Browser UI]
+      REACT[React / Vite<br/>frontend → web/public/calm]
+      LEGACY[Legacy workstation<br/>/legacy]
+      HISTORY[localStorage<br/>story history · theme · language]
+    end
+    API[FastAPI · api.py<br/>/api/* · /docs · serves /]
+    subgraph Services[parliament/ services]
+      ING[ingest.py<br/>import · on-demand hydration]
+      RET[retrieval.py + news_retrieval.py<br/>title anchor · keyword + vector · evidence]
+      FC[factcheck.py<br/>sentence scope → claims → review → correction]
+      CLF[classifier.py<br/>APS/custom labels + quote validation]
+      JOB[jobs.py<br/>persistent APS runner · max 300k · 8B]
+      JUDGE[judge.py<br/>blind LLM judge · 70B]
+      EMB[embeddings.py<br/>offline E5 · 384d passages]
+    end
+    DB[(DuckDB<br/>affairs · units · topics · embeddings<br/>classifications · fact checks · jobs · judgments)]
+    E5[Local multilingual E5 small<br/>384d embedding model]
+  end
+
+  AP[Apertus 8B / 70B<br/>OpenAI-compatible endpoint]
+
+  EXP --> ING
+  REST <--> ING
+  ING --> DB
+  EMB <--> E5
+  DB --> EMB
+  EMB --> DB
+  REACT <--> API
+  LEGACY <--> API
+  REACT <--> HISTORY
+  API --> RET
+  API --> FC
+  API --> CLF
+  API --> JOB
+  RET <--> DB
+  RET --> EMB
+  FC <--> DB
+  FC --> RET
+  FC <--> AP
+  CLF <--> DB
+  CLF --> EMB
+  CLF <--> AP
+  JOB <--> DB
+  JOB --> CLF
+  JUDGE <--> DB
+  JUDGE <--> AP
+```
+
+One local FastAPI process (`127.0.0.1:8000`) serves both UIs and the API. When the archive is present, startup ensures a resumable APS run covering up to 300,000 affairs with 8B, plus a separate 70B judge; inference calls are serialized by a shared lock. The full table map, endpoint sequence, retrieval limits, and storage/locking details are in [TECHNICAL_REPORT.md](TECHNICAL_REPORT.md).
 
 ## Evaluation and limits
 

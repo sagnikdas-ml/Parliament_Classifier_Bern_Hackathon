@@ -73,10 +73,9 @@ function Dossier({ claim, affair }) {
   return (
     <div className="mt-4 space-y-3">
       <dl className="grid grid-cols-[88px_1fr] gap-x-3 gap-y-1.5 text-[14px]">
-        <dt className="text-muted">Source ID</dt><dd className="font-mono text-[13px] font-medium text-ink">OpenParlData {ev.affairId}</dd>
-        {affair && <><dt className="text-muted">Affair</dt><dd className="font-serif text-[15px] leading-snug text-ink">{affair.number} — {affair.title}</dd></>}
+        {affair && <><dt className="text-muted">Source</dt><dd className="font-serif text-[15px] leading-snug text-ink">{affair.url ? <a href={affair.url} target="_blank" rel="noreferrer" className="hover:underline">{affair.title} ↗</a> : affair.title}</dd></>}
         <dt className="text-muted">Author</dt><dd className="text-ink">{author}</dd>
-        {affair?.date && <><dt className="text-muted">Record</dt><dd className="text-ink">{affair.date}</dd></>}
+        {affair?.date && <><dt className="text-muted">Record date</dt><dd className="text-ink">{affair.date}</dd></>}
       </dl>
       <div className="rounded-xl border border-line bg-sunk p-4">
         <div className="mb-2 flex items-center gap-1.5 text-[12px] text-muted"><Quote size={12} /> Verbatim archive quotation (original language)</div>
@@ -97,7 +96,7 @@ function EvidenceGraph({ claim, result }) {
   const nodes = [], edges = []
   for (const affair of affairs) {
     const affairKey = `affair:${affair.id}`
-    nodes.push({ id: affairKey, label: affair.number, meta: affair.title, kind: 'affair' })
+    nodes.push({ id: affairKey, label: affair.title, meta: 'Parliamentary record', kind: 'affair' })
     for (const author of affair.authors || []) {
       const id = `person:${affair.id}:${author.name}`
       if (!nodes.some((n) => n.id === id)) nodes.push({ id, label: author.name, meta: author.party || 'Speaker', kind: 'person' })
@@ -111,7 +110,7 @@ function EvidenceGraph({ claim, result }) {
     }
   }
   if (!nodes.length) return null
-  return <div className="mt-4 border-t border-line pt-3"><div className="label">Evidence relationships</div><CalmGraph nodes={nodes} edges={edges} sourceLabel="Checked claim" empty="No linked archive records." /></div>
+  return <div className="mt-4 border-t border-line pt-3"><div className="label">Evidence relationships</div><CalmGraph nodes={nodes} edges={edges} sourceLabel="Checked claim" empty="No linked archive records." showTopicLinks={false} /></div>
 }
 
 function Marginalia({ entry, index, onClose, review, setReview, onReplace, onEdit }) {
@@ -136,8 +135,8 @@ function Marginalia({ entry, index, onClose, review, setReview, onReplace, onEdi
               {LABEL[c.verdict]}
             </div>
             <p className="mt-2 font-serif text-[16px] italic leading-snug text-muted">{c.explanation}</p>
-            <Dossier claim={c} affair={affair} />
             <EvidenceGraph claim={c} result={r} />
+            <Dossier claim={c} affair={affair} />
             {r.topics?.length > 0 && <div className="mt-3"><div className="text-[12px] font-medium text-muted">Parliamentary topics</div><div className="mt-1 flex flex-wrap gap-1.5">{r.topics.map((t, topicIndex) => <span key={`${t.topic_id || t.name}-${topicIndex}`} className="rounded-full border border-line px-2.5 py-1 text-[12px] text-ink">{t.name}{t.chapter?.de ? ` · ${t.chapter.de}` : t.chapter ? ` · ${t.chapter}` : ''}</span>)}</div></div>}
             {c.correction && (
               <div className="mt-4 rounded-xl border border-ok/30 bg-ok/10 p-3.5">

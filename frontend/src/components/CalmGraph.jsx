@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Fingerprint } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 /** Calm-style, data-backed relationship graph: a quiet source node, curved links and ranked record nodes. */
-export default function CalmGraph({ nodes = [], edges = [], sourceLabel = 'Source', empty = 'No relationships in the available records.', large = false, showTopicLinks = true }) {
+export default function CalmGraph({ nodes = [], edges = [], sourceLabel = 'Source', empty = 'No relationships in the available records.', large = false, showTopicLinks = true, hoverDetails = false }) {
   const ref = useRef(null)
   const [width, setWidth] = useState(640)
+  const [hovered, setHovered] = useState(null)
   useEffect(() => {
     if (!ref.current) return
     const observer = new ResizeObserver(([entry]) => setWidth(Math.max(320, entry.contentRect.width)))
@@ -41,12 +43,21 @@ export default function CalmGraph({ nodes = [], edges = [], sourceLabel = 'Sourc
       <span className="absolute inset-0 animate-pulseRing rounded-full border border-accent/35" />
       <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-accent/45 bg-surface" title={sourceLabel}><Fingerprint size={20} className="text-accent" strokeWidth={1.4} /></div>
     </div>
-    {rows.map((node, i) => <motion.div key={node.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .18 + i * .06 }} className="absolute -translate-y-1/2" style={{ top: 36 + i * step, left: targetX, maxWidth: targetWidth }}>
+    {rows.map((node, i) => <motion.div key={node.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .18 + i * .06 }} className="absolute -translate-y-1/2" style={{ top: 36 + i * step, left: targetX, maxWidth: targetWidth }}
+      onMouseEnter={(event) => hoverDetails && setHovered({ node, x: event.clientX, y: event.clientY })}
+      onMouseMove={(event) => hoverDetails && setHovered((current) => current?.node.id === node.id ? { ...current, x: event.clientX, y: event.clientY } : current)}
+      onMouseLeave={() => hoverDetails && setHovered(null)}
+      onFocus={(event) => { if (hoverDetails) { const rect = event.currentTarget.getBoundingClientRect(); setHovered({ node, x: rect.left + rect.width / 2, y: rect.top }) } }}
+      onBlur={() => hoverDetails && setHovered(null)} tabIndex={hoverDetails ? 0 : undefined} aria-describedby={hoverDetails && hovered?.node.id === node.id ? 'topic-graph-hover' : undefined}>
       <div className={`flex items-center gap-2 rounded-lg border ${large ? 'px-3.5 py-2' : 'px-3 py-1.5'} ${node.kind === 'topic' ? 'border-aps/30 bg-aps/5' : node.kind === 'person' ? 'border-ok/30 bg-ok/5' : 'border-accent/30 bg-accent/5'}`} title={node.meta || node.label}>
         <span className={`whitespace-normal font-serif font-medium leading-snug text-ink ${large ? 'text-[17px]' : 'text-[14px]'}`}>{node.label}</span>
         {node.value != null && <span className={`shrink-0 font-mono text-muted ${large ? 'text-[13px]' : 'text-[11px]'}`}>{node.value}</span>}
       </div>
-      {node.meta && <div className={`mt-0.5 truncate pl-1 text-muted ${large ? 'text-[13px]' : 'text-[11px]'}`}>{node.meta}</div>}
+      {node.meta && !hoverDetails && <div className={`mt-0.5 truncate pl-1 text-muted ${large ? 'text-[13px]' : 'text-[11px]'}`}>{node.meta}</div>}
     </motion.div>)}
+    {hoverDetails && hovered && createPortal(<div id="topic-graph-hover" role="tooltip" className="pointer-events-none fixed z-[100] max-w-[min(320px,calc(100vw-24px))] rounded-xl border border-line bg-surface px-3.5 py-2.5 text-left shadow-xl" style={{ left: Math.max(12, Math.min(hovered.x + 16, window.innerWidth - 332)), top: Math.max(12, Math.min(hovered.y + 16, window.innerHeight - 96)) }}>
+      <div className="font-serif text-[16px] font-medium text-ink">{hovered.node.label}</div>
+      {hovered.node.meta && <div className="mt-1 text-[12px] leading-relaxed text-muted">{hovered.node.meta}</div>}
+    </div>, document.body)}
   </div>
 }
