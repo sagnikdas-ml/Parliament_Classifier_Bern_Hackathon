@@ -72,6 +72,14 @@ CREATE TABLE IF NOT EXISTS job_items (
  error VARCHAR, result VARCHAR, attempts INTEGER DEFAULT 0,
  PRIMARY KEY (job_id, affair_id, language)
 );
+CREATE TABLE IF NOT EXISTS llm_judgments (
+ job_id VARCHAR, affair_id BIGINT, language VARCHAR, result_hash VARCHAR,
+ judge_version VARCHAR, judge_model VARCHAR, status VARCHAR, attempts INTEGER,
+ result VARCHAR, prediction_snapshot VARCHAR, exact_match BOOLEAN,
+ true_positive INTEGER, false_positive INTEGER, false_negative INTEGER,
+ repair_queued BOOLEAN DEFAULT false, error VARCHAR, updated_at TIMESTAMP DEFAULT current_timestamp,
+ PRIMARY KEY(job_id,affair_id,language,judge_version)
+);
 """
 
 
@@ -92,6 +100,14 @@ def connect():
             connection.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS finished_at TIMESTAMP")
             connection.execute("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS elapsed_seconds BIGINT DEFAULT 0")
             connection.execute("ALTER TABLE job_items ADD COLUMN IF NOT EXISTS attempts INTEGER DEFAULT 0")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS prediction_snapshot VARCHAR")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS exact_match BOOLEAN")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS true_positive INTEGER")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS false_positive INTEGER")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS false_negative INTEGER")
+            connection.execute("ALTER TABLE llm_judgments ADD COLUMN IF NOT EXISTS repair_queued BOOLEAN DEFAULT false")
+            connection.execute("UPDATE llm_judgments SET status='failed',attempts=0,error='Rejudging legacy score without saved prediction snapshot.' WHERE status='judged' AND prediction_snapshot IS NULL")
+            connection.execute("UPDATE llm_judgments SET status='failed',attempts=0,repair_queued=true,error='Scheduling focused evidence repair.' WHERE judge_version='blind-archive-judge-v1' AND status='failed' AND error LIKE '%Model evidence is not a verified substantive source passage%' AND repair_queued=false")
             yield connection
         finally:
             connection.close()

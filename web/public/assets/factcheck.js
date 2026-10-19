@@ -100,6 +100,7 @@
   }
   function setActiveSentence(index) {
     activeSentence = index;
+    window.PoliGraphs.news(index === null ? null : translatedResult(index) || results.get(index));
     for (const button of document.querySelectorAll('.storySentence, .timelineStep')) {
       const active = Number(button.dataset.index) === index;
       button.setAttribute('aria-pressed', String(active));
@@ -376,6 +377,7 @@
   });
   function render(result, card) {
     result = result && typeof result === 'object' ? result : {};
+    if (activeSentence === result.index) window.PoliGraphs.news(result);
     result.text = result.text || run?.sentences?.[result.index]?.text || '';
     const claims = Array.isArray(result.claims) ? result.claims : [];
     const status = result.status || 'unverified';
@@ -569,10 +571,32 @@
       track.append(bar); body.append(heading, track); row.append(rank, body); chart.append(row);
     });
   }
+  function renderRunQuality(quality) {
+    if (!quality) { el('qualityUpdated').textContent = 'Quality data unavailable'; return; }
+    const percentage = value => Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : '—';
+    const scores = quality.scores;
+    [['qualityAccuracy','exact_match'],['qualityPrecision','micro_precision'],['qualityRecall','micro_recall'],['qualityF1','micro_f1']].forEach(([id, key]) => {
+      el(id).textContent = scores ? percentage(scores[key]) : 'Judge warming up';
+      el(id).classList.toggle('awaitingJudge', !scores);
+    });
+    el('qualitySample').textContent = `${quality.reviewed.toLocaleString()} judged / ${quality.completed.toLocaleString()} completed · ${quality.unjudgeable || 0} abstained · ${quality.judge_failed || 0} judge failures · ${Math.max(0, quality.completed - quality.reviewed - (quality.unjudgeable || 0) - (quality.judge_failed || 0))} awaiting judge`;
+    const rate = (count, denominator) => `${count.toLocaleString()} · ${percentage(denominator ? count / denominator : null)}`;
+    el('qualityTopics').textContent = rate(quality.with_topics, quality.completed);
+    el('qualityEvidence').textContent = rate(quality.insufficient_evidence, quality.completed);
+    el('qualityFailures').textContent = rate(quality.failed, quality.completed + quality.failed);
+    el('qualityBasis').textContent = quality.basis;
+    el('qualityConfusion').textContent = `Compared with the judge: ${quality.true_positive} matching labels · ${quality.false_positive} extra · ${quality.false_negative} missed. Judge: ${quality.judge_model || 'Apertus 70B'}. A dash means the metric has no denominator.`;
+    el('qualityUpdated').textContent = `Updated ${new Date(quality.updated_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}`;
+  }
+  let jobPollInFlight = false;
   async function pollJob() {
     if (!bulkJob) return;
+    if (jobPollInFlight) return;
+    jobPollInFlight = true;
     try {
-      const job = await (await fetch(`/api/jobs/${bulkJob.id}`)).json();
+      const response = await fetch(`/api/jobs/${bulkJob.id}`, {cache:'no-store'});
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
+      const job = await response.json();
       const counts = Object.fromEntries(job.progress.map(item => [item.status, item.count]));
       const done = counts.done || 0, failed = counts.failed || 0;
       el('jobStatus').textContent = `${job.status} · ${done.toLocaleString()} / ${job.total.toLocaleString()}`;
@@ -581,6 +605,8 @@
       el('classificationPercent').textContent = `${(done / Math.max(1, job.total) * 100).toFixed(1)}%`;
       el('classificationDone').textContent = done.toLocaleString();
       renderTopicRanking(job.topic_distribution || [], done);
+      renderRunQuality(job.quality);
+      window.PoliGraphs.archive(job.topic_graph);
       el('classificationFailures').textContent = `Cases needing retry: ${failed.toLocaleString()}`;
       const remaining = job.live_estimated_remaining_seconds;
       const active = ['queued', 'running'].includes(job.status);
@@ -598,11 +624,10 @@
         el('estimateDetail').textContent = 'A live finish estimate appears after the first cases complete.';
       }
       if (!active && ['paused','cancelled','completed_with_errors'].includes(job.status) && !job.resumable) el('jobDetail').textContent += ' · This saved run cannot resume with the current prompt version.';
-      if (!active) {
-        clearInterval(jobTimer); jobTimer = null;
-        return;
-      }
-    } catch (error) { el('jobDetail').textContent = `Progress connection interrupted: ${error.message}`; }
+    } catch (error) {
+      el('jobDetail').textContent = `Progress connection interrupted: ${error.message}`;
+      el('qualityUpdated').textContent = 'Connection interrupted · showing last update';
+    } finally { jobPollInFlight = false; }
   }
   async function restoreJob() {
     try {
@@ -620,7 +645,7 @@
       }
       bulkJob = latest; el('bulkModel').value = latest.config.model || 'apertus-v1-5-8b'; el('bulkTopic').value = latest.topic_id || 'aps';
       await pollJob();
-      if (['queued','running'].includes(latest.status)) jobTimer = setInterval(pollJob, 6000);
+      jobTimer = setInterval(pollJob, 6000);
     } catch { el('jobDetail').textContent = 'Saved run status could not be loaded.'; }
   }
   loadCustomTopics().then(restoreJob);

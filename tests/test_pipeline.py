@@ -11,7 +11,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from parliament import classifier, db, embeddings, evaluation, ingest, jobs, retrieval
+from parliament import classifier, db, embeddings, evaluation, ingest, jobs, retrieval, judge
 from parliament.config import EMBED_VERSION, MODEL, digest, json_text
 
 
@@ -58,8 +58,73 @@ class PipelineTests(unittest.TestCase):
             {"topic_id": "Education", "name": "Education", "count": 1},
         ])
         self.assertEqual(jobs.topic_distribution("empty"), [])
+        graph = jobs.topic_relationships("run", jobs.topic_distribution("run"))
+        self.assertEqual(graph["edges"], [{"source": "Education", "target": "Health", "weight": 1}])
 
-    def mock_call(self, *args):
+    def test_live_run_metrics_require_compatible_frozen_reviews(self):
+        self.assertIsNone(evaluation.live_run_report("empty", self.topic)["scores"])
+        def prediction(labels, content="v1"):
+            return json_text({"labels": [{"topic_id": label} for label in labels],
+                              "language": "de", "status": "relevant" if labels else "not_relevant",
+                              "content_hash": content, "topic_version": "topics-v1"})
+        with db.connect() as connection:
+            for affair, gold, predicted, content in [(1, ["A", "B"], ["A", "C"], "v1"), (2, [], [], "v1"), (3, ["A"], ["A"], "old")]:
+                connection.execute("INSERT INTO job_items (job_id,affair_id,language,status,result) VALUES ('quality',?,'auto','done',?)", [affair, prediction(predicted)])
+                connection.execute("INSERT INTO reviews (affair_id,topic_id,language,labels,frozen,prediction) VALUES (?,?,'de',?,true,?)", [affair, self.topic, json_text(gold), prediction(gold, content)])
+        quality = evaluation.live_run_report("quality", self.topic)
+        self.assertEqual(quality["reviewed"], 2)
+        self.assertEqual(quality["excluded_reviews"], 1)
+        for metric in ("exact_match", "micro_precision", "micro_recall", "micro_f1"):
+            self.assertEqual(quality["scores"][metric], .5)
+        self.assertEqual(quality["completed"], 3)
+        db.execute("UPDATE reviews SET frozen=false")
+        self.assertIsNone(evaluation.live_run_report("quality", self.topic)["scores"])
+
+    def test_llm_judge_is_blind_validated_and_persistent(self):
+        with patch.object(classifier, "call_json", side_effect=self.mock_call):
+            prediction = classifier.classify(1, self.topic, "de", fetch=False)
+        run = jobs.create_job("classify", self.topic, 1, [{"affair_id": 1}])
+        db.execute("UPDATE job_items SET status='done',result=? WHERE job_id=?", [json_text(prediction), run["id"]])
+        with patch.object(classifier, "call_json", side_effect=self.mock_call) as inference:
+            self.assertTrue(judge.run_one())
+        payload = inference.call_args.args[1]
+        self.assertNotIn("prediction", payload)
+        self.assertNotIn("labels", payload)
+        self.assertEqual(inference.call_args.kwargs["model"], "apertus-v1-5-70b")
+        self.assertFalse(judge.run_one())
+        report = judge.report(run["id"])
+        self.assertEqual(report["reviewed"], 1)
+        self.assertEqual(report["scores"]["exact_match"], 1)
+        self.assertEqual(report["scores"]["micro_f1"], 1)
+        # A rerun invalidates the saved judgment before replacing its snapshot.
+        prediction["labels"] = []
+        db.execute("DELETE FROM llm_judgments WHERE job_id=?", [run["id"]])
+        db.execute("UPDATE job_items SET result=? WHERE job_id=?", [json_text(prediction), run["id"]])
+        self.assertIsNone(judge.report(run["id"])["scores"])
+        with patch.object(classifier, "call_json", side_effect=self.mock_call):
+            self.assertTrue(judge.run_one())
+        report = judge.report(run["id"])
+        self.assertEqual(report["false_negative"], 1)
+        self.assertEqual(report["scores"]["exact_match"], 0)
+        self.assertIsNone(report["scores"]["micro_precision"])
+
+    def test_llm_judge_abstains_and_rejects_invented_evidence(self):
+        with patch.object(classifier, "call_json", side_effect=self.mock_call):
+            prediction = classifier.classify(1, self.topic, "de", fetch=False)
+        bad = self.valid_decision()
+        bad.labels[0].evidence.quote = "This is an invented quotation that does not exist."
+        with patch.object(classifier, "call_json", return_value=(bad, {})):
+            with self.assertRaises(ValueError):
+                judge.assess(prediction)
+        abstention = classifier.Decision(status="insufficient_evidence", labels=[], explanation="Cannot assess.")
+        with patch.object(classifier, "call_json", return_value=(abstention, {})):
+            self.assertEqual(judge.assess(prediction)["status"], "unjudgeable")
+        prediction["content_hash"] = "old"
+        with patch.object(classifier, "call_json") as inference:
+            self.assertEqual(judge.assess(prediction)["status"], "unjudgeable")
+            inference.assert_not_called()
+
+    def mock_call(self, *args, **kwargs):
         return self.valid_decision(), {"calls": 1, "prompt_tokens": 10, "completion_tokens": 5}
 
     def test_html_and_translations(self):

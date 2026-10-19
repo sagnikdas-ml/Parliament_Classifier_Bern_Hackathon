@@ -15,9 +15,9 @@ from openai import APIConnectionError, APIStatusError, APITimeoutError
 
 from test_apertus import ask_apertus
 from parliament import db
-from parliament import classifier, jobs, retrieval
+from parliament import classifier, jobs, retrieval, judge
 from parliament.config import ROOT
-from parliament.evaluation import report, evaluation_sample
+from parliament.evaluation import report, evaluation_sample, live_run_report
 from parliament.ingest import ensure_affair
 
 
@@ -26,7 +26,9 @@ async def lifespan(app):
     from parliament.digitalisation import ensure_topic
     ensure_topic()
     jobs.start_worker()
+    judge.start_worker()
     yield
+    judge.stop_worker()
     jobs.stop_worker()
 
 
@@ -328,6 +330,11 @@ def job_estimate(model: str = Query(default="apertus-v1-5-70b"), topic_id: str =
 def job(identifier: str):
     record = jobs.get_job(identifier)
     record["topic_distribution"] = jobs.topic_distribution(identifier) if record["kind"] == "classify" else []
+    record["quality"] = live_run_report(identifier, record["topic_id"]) if record["kind"] == "classify" else None
+    if record["quality"] is not None:
+        human = record["quality"]
+        record["quality"] = {**human, **judge.report(identifier), "human_reviewed": human["reviewed"], "human_scores": human["scores"]}
+    record["topic_graph"] = jobs.topic_relationships(identifier, record["topic_distribution"])
     if record.get("started_at"):
         timing = db.query("SELECT coalesce(elapsed_seconds,0)+CASE WHEN status='running' THEN date_diff('second',started_at,current_timestamp) ELSE 0 END AS seconds FROM jobs WHERE id=?", [identifier])[0]
         record["elapsed_seconds"] = timing["seconds"]

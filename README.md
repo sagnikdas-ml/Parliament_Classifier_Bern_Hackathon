@@ -385,3 +385,24 @@ Sources: [challenge presentation](https://hackapertus-topic-classification-5c233
 [challenge datasets](https://files.openparldata.ch/hackapertus/),
 [API](https://api.openparldata.ch/documentation),
 [E5 model card](https://huggingface.co/intfloat/multilingual-e5-small).
+
+### Live LLM judge
+
+The archive page automatically evaluates completed classifications with a separate
+`apertus-v1-5-70b` (non-thinking) pass through Keera, using the same `.key` file.
+The judge reads cached archive text and the full topic catalogue without seeing
+the original prediction. Its exact evidence quotations are checked against the
+source before its labels become model-generated references.
+
+The quality panel refreshes every six seconds: exact topic-set and relevance-status agreement, micro
+precision, recall and F1, plus judged, awaiting, abstained and failed counts.
+These are **LLM-judge estimates**, not human-verified accuracy. Same-family models
+can share mistakes. Missing or truncated source text, changed sources/taxonomies,
+and judge abstentions are excluded from scoring; failed calls are retried up to
+three times, with one focused source-quote repair pass for invalid citations.
+Frozen human-review scores remain separate in the API.
+
+Judgments persist in DuckDB and resume automatically after restart. Evaluation
+adds 70B inference calls and shares inference capacity with the other tools;
+classification progress and judge coverage can therefore advance at different
+rates. No additional service or API key is required.

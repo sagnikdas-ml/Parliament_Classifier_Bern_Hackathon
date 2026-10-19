@@ -117,6 +117,25 @@ def topic_distribution(identifier):
     """, [identifier])
 
 
+def topic_relationships(identifier, ranked_topics):
+    nodes = ranked_topics[:12]
+    if not nodes:
+        return {"nodes": [], "edges": [], "total_topics": len(ranked_topics)}
+    edges = db.query("""
+        WITH assigned AS (
+            SELECT DISTINCT item.affair_id, json_extract_string(label.value,'$.topic_id') AS topic_id
+            FROM (SELECT affair_id,result FROM job_items WHERE job_id=? AND status='done') item,
+                 json_each(item.result,'$.labels') label
+            WHERE json_extract_string(item.result,'$.status')='relevant'
+              AND json_extract_string(label.value,'$.topic_id') IN (SELECT unnest(?))
+        )
+        SELECT a.topic_id AS source, b.topic_id AS target, count(*) AS weight
+        FROM assigned a JOIN assigned b ON a.affair_id=b.affair_id AND a.topic_id<b.topic_id
+        GROUP BY a.topic_id,b.topic_id ORDER BY weight DESC, source, target
+    """, [identifier, [node["topic_id"] for node in nodes]])
+    return {"nodes": nodes, "edges": edges, "total_topics": len(ranked_topics)}
+
+
 def control_job(identifier, action):
     job = get_job(identifier)
     if action == "cancel":
@@ -173,6 +192,7 @@ def _run_job(identifier):
                     else:
                         fetch_content(item["affair_id"])
                         result = {"fetched": True}
+                    db.execute("DELETE FROM llm_judgments WHERE job_id=? AND affair_id=? AND language=?", key)
                     db.execute("UPDATE job_items SET status='done',result=? WHERE job_id=? AND affair_id=? AND language=?", [json_text(result), *key])
                 except Exception as error:
                     message = f"{type(error).__name__}: {str(error)[:300]}"

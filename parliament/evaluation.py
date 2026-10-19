@@ -67,6 +67,46 @@ def report(topic_id="aps"):
     return result
 
 
+def live_run_report(identifier, topic_id):
+    """Evaluate this run against compatible frozen reviews; never infer gold labels."""
+    counts = db.query("""
+        SELECT count(*) FILTER (WHERE status='done') AS completed,
+               count(*) FILTER (WHERE status='failed') AS failed,
+               count(*) FILTER (WHERE status='done' AND json_extract_string(result,'$.status')='insufficient_evidence') AS insufficient_evidence,
+               count(*) FILTER (WHERE status='done' AND json_extract_string(result,'$.status')='relevant') AS with_topics
+        FROM job_items WHERE job_id=?
+    """, [identifier])[0]
+    reviewed = db.query("""
+        SELECT i.result, r.labels, r.prediction
+        FROM job_items i JOIN reviews r ON r.affair_id=i.affair_id
+          AND r.language=json_extract_string(i.result,'$.language')
+        WHERE i.job_id=? AND i.status='done' AND r.topic_id=?
+          AND r.frozen=true AND r.prediction IS NOT NULL
+    """, [identifier, topic_id])
+    pairs, excluded = [], 0
+    for row in reviewed:
+        prediction, reference = json.loads(row["result"]), json.loads(row["prediction"])
+        # Reviews of changed source material or a changed taxonomy cannot score this run.
+        if any(not prediction.get(key) or prediction[key] != reference.get(key)
+               for key in ("content_hash", "topic_version")):
+            excluded += 1
+            continue
+        pairs.append((set(json.loads(row["labels"])), {label["topic_id"] for label in prediction.get("labels", [])}))
+    scores = metrics(pairs) if pairs else None
+    tp = sum(len(gold & predicted) for gold, predicted in pairs)
+    fp = sum(len(predicted - gold) for gold, predicted in pairs)
+    fn = sum(len(gold - predicted) for gold, predicted in pairs)
+    if scores:
+        scores["micro_precision"] = tp / (tp + fp) if tp + fp else None
+        scores["micro_recall"] = tp / (tp + fn) if tp + fn else None
+        scores["micro_f1"] = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else None
+    from datetime import datetime, timezone
+    return {**counts, "reviewed": len(pairs), "excluded_reviews": excluded,
+            "scores": scores, "true_positive": tp, "false_positive": fp, "false_negative": fn,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "basis": "Frozen human reviews of matching source content and topic definitions. Reviews are prediction-assisted; this is not an independent or representative benchmark."}
+
+
 def digitalisation_recall(candidate_ids, body=None):
     condition = "AND a.body_key=?" if body else ""
     positives = db.query(f"SELECT s.affair_id FROM source_labels s JOIN affairs a ON a.id=s.affair_id WHERE s.scheme='politmonitor:digitalisation' {condition}", [body] if body else [])
